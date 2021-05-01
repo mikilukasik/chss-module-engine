@@ -1190,20 +1190,39 @@ export function getHitScores(origTable, wNext) {
   for (var lookI = 0; lookI < 8; lookI += 1) {
     for (var lookJ = 0; lookJ < 8; lookJ += 1) { //look through the table
       if (origTable[lookI][lookJ][0] === 0) continue; // empty cell
-      newCanMove(lookI, lookJ, origTable); //newCanMove will protect the table
+      newCanMove(lookI, lookJ, origTable);
     }
   }
 
   // process that data gathered above
-  let totalValue = 0;
+  let hitScore = 0;
+  let protectScore = 0;
+  let attackScore = 0;
 
   for (var lookI = 0; lookI < 8; lookI += 1) {
     cellLoop:
     for (var lookJ = 0; lookJ < 8; lookJ += 1) { //look through the table
-      if (origTable[lookI][lookJ][0] === 0 || !origTable[lookI][lookJ][2]) continue cellLoop; // empty cell or not attacked cell
+      if (origTable[lookI][lookJ][0] === 0 || // empty cell
+        !(
+          origTable[lookI][lookJ][2] || // not attacked cell
+          origTable[lookI][lookJ][3]  // not protected cell
+        )
+      ) continue cellLoop; // nothing to do here
+
+      if (origTable[lookI][lookJ][0] === c) {
+        // my piece, will count attack/protect scores, but not hitscore
+        if (origTable[lookI][lookJ][2]) attackScore -= origTable[lookI][lookJ][1]; // if attacked deduckt pieceVal from attack score
+        if (origTable[lookI][lookJ][3]) protectScore += origTable[lookI][lookJ][3].length; // if protected add protector count to protect score
+        continue cellLoop; // nothing else to do here
+      }
 
       if (origTable[lookI][lookJ][0] !== c) {
         // opponent's piece
+        if (origTable[lookI][lookJ][3]) protectScore -= origTable[lookI][lookJ][3].length; // if protected deduct protector count from protect score
+        if (!origTable[lookI][lookJ][2]) continue cellLoop; // if not attacked then we're done here
+
+        attackScore += origTable[lookI][lookJ][1]; // add pieceVal to attack score
+
         let thisCellValue = 0;
         let weakestProtector;
         let weakestAttacker;
@@ -1211,7 +1230,7 @@ export function getHitScores(origTable, wNext) {
         let hasMoreProtectors;
 
         if (!origTable[lookI][lookJ][3]) { // cell has no protector
-          totalValue += origTable[lookI][lookJ][1]; // this cell can be hit, add value and check next cell
+          hitScore += origTable[lookI][lookJ][1]; // this cell can be hit, add value and check next cell
           continue cellLoop;
         }
         // cell has protector
@@ -1230,7 +1249,7 @@ export function getHitScores(origTable, wNext) {
           weakestAttacker < weakestProtector // the protector worth more than the 1st attacker used
         ) {
           // break here, protector will not be used, doesn't worth it
-          totalValue += thisCellValue;
+          hitScore += thisCellValue;
           continue cellLoop;
         }
         // weakest attacker will be hit
@@ -1238,7 +1257,7 @@ export function getHitScores(origTable, wNext) {
         thisCellValue -= weakestAttacker; // deduct weakest attacker
 
         if (!hasMoreAttackers) { // no more attackers
-          if (thisCellValue > 0) totalValue += thisCellValue; // add cellvalue if worth to hit
+          if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
           continue cellLoop;
         };
         // there are more attackers
@@ -1251,7 +1270,7 @@ export function getHitScores(origTable, wNext) {
             weakestProtector < weakestAttacker
           ) {
             // break here, attacker will not be used, doesn't worth it
-            if (thisCellValue > 0) totalValue += thisCellValue; // add cellvalue if worth to hit
+            if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
             continue cellLoop;
           }
           // weakest protector will be hit
@@ -1260,7 +1279,7 @@ export function getHitScores(origTable, wNext) {
 
           // while (true) {
           if (!hasMoreProtectors) { // no more protectors
-            if (thisCellValue > 0) totalValue += thisCellValue; // add cellvalue if worth to hit
+            if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
             continue cellLoop;
           };
           // there are more protectors
@@ -1273,7 +1292,7 @@ export function getHitScores(origTable, wNext) {
             weakestAttacker < weakestProtector
           ) {
             // break here, attacker will not be used, doesn't worth it
-            if (thisCellValue > 0) totalValue += thisCellValue; // add cellvalue if worth to hit
+            if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
             continue cellLoop;
           }
           // weakest attacker will be hit
@@ -1281,7 +1300,7 @@ export function getHitScores(origTable, wNext) {
           thisCellValue -= weakestAttacker;
 
           if (!hasMoreAttackers) { // no more attackers
-            if (thisCellValue > 0) totalValue += thisCellValue;
+            if (thisCellValue > 0) hitScore += thisCellValue;
             continue cellLoop;
           };
           // there are more attackers
@@ -1293,7 +1312,7 @@ export function getHitScores(origTable, wNext) {
     }
   }
 
-  return totalValue * 100;
+  return hitScore * 100 + attackScore + protectScore;
 };
 
 
@@ -1397,14 +1416,13 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
           sdt.shouldIDraw,
           sdt.moveCountTree.concat(possibleMoves.length),
         )
-      } //  )    //end of for each move
-
+      }
     }
+
     result[result.length] = new TriggerItem(sdt.depth + 1, sdt.moveTree, sdt.wPlayer)
     //this will trigger move calc when processing array (will be placed before each set of smalltasks)
   }
-  return result
-
+  return result;
 }
 
 export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve the whole deepening task on one thread
@@ -1412,7 +1430,7 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
   //var taskValue = deepeningTask.
   var retProgress = deepeningTask.progress
 
-  var startedAt = new Date().getTime()
+  // var startedAt = new Date().getTime()
   if (isSdt) {
     //we are in worker, received 2nd depth table already processed with oneDeeper()
     //this table is after his first return move
@@ -1422,35 +1440,40 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
       desiredDepth: deepeningTask.desiredDepth,
       smallDeepeningTasks: [deepeningTask],
       wPlayer: deepeningTask.wPlayer,
-      mod: deepeningTask.mod,
+      // mod: deepeningTask.mod,
       shouldIDraw: deepeningTask.shouldIDraw
     }
     deepeningTask = tempDeepeningTask
   }
+
   var resolverArray = [] //multidim, for each depth the results, will be updated a million times
 
+  // TODO: why is this +2?
   var p2 = deepeningTask.desiredDepth + 2;
   for (var i = 0; i < p2; i += 1) {
-    resolverArray[i] = []
+    resolverArray[i] = [];
   }
+
   while (deepeningTask.smallDeepeningTasks.length > 0) {
     //length is 1 at first, then just grows until all has reached the level. evetually there will be nothing to do and this loop exists
 
-    var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop()
-    // smallDeepeningTask.table = toTypedTable(smallDeepeningTask.table)
-    var resultingSDTs = solveSmallDeepeningTask(smallDeepeningTask, resolverArray)
+    var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop();
+
+    var resultingSDTs = solveSmallDeepeningTask(smallDeepeningTask, resolverArray);
+
+
     for (var l = resultingSDTs.length - 1; l >= 0; l -= 1) {
       deepeningTask.smallDeepeningTasks[deepeningTask.smallDeepeningTasks.length] = resultingSDTs[l]; //at the beginning the unsent array is just growing but then we run out
     }
     //call it again if there are tasks
   }
-  var timeItTook = new Date()
-    .getTime() - startedAt
+  // var timeItTook = new Date()
+  //   .getTime() - startedAt
 
   var ret = {
     gameNum: deepeningTask.gameNum,
     progress: retProgress,
-    timeItTook: timeItTook,
+    // timeItTook: timeItTook,
     score: resolverArray[2][0].value,
     moveTree: resolverArray[2][0].moveTree//.join(',')
   }
@@ -1518,27 +1541,16 @@ export function resolveDepth(depth, resolverArray) {
 
 var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, wPlayer, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
   this.gameNum = gameNum
-
   this.wPlayer = wPlayer
-
   this.table = table
-
   this.wNext = wNext
-
   this.depth = depth
-
   this.moveTree = moveTree
-
   this.desiredDepth = desiredDepth
-
   this.score = score
-
   this.mod = mod
-
   this.shouldIDraw = shouldIDraw
-
   this.moveCountTree = moveCountTree
-
 }
 
 export const DeepeningTask = function (smallMoveTask) { //keep this fast, designed for main thread and mainWorker ???not sure..     //smallMoveTask is a smallMoveTask, to be deepend further
