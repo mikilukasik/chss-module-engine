@@ -1327,10 +1327,27 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
       //invalid move, sakkban maradt
 
       // this below is BS, someone maybe won the game here?
-      result = [new SmallDeepeningTask(sdt.table, newWNext, sdt.depth + 1,
-        sdt.moveTree, sdt.desiredDepth, 100,
-        sdt.wPlayer, false, sdt.gameNum,
-        sdt.mod, sdt.shouldIDraw, sdt.moveCountTree.concat(20))] // TODO: 20 is random, defo wrong this whole bit.
+
+  // var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
+
+      result = [{
+        // gameNum: sdt.gameNum,
+        table: sdt.table,
+        wNext: newWNext,
+        depth: sdt.depth + 1,
+        moveTree: sdt.moveTree,
+        desiredDepth: sdt.desiredDepth,
+        score: 100,
+        // mod: sdt.mod,
+        shouldIDraw: sdt.shouldIDraw,
+        moveCountTree: sdt.moveCountTree.concat(20), // TODO: 20 is random, defo wrong this whole bit.
+      }];
+
+
+      // result = [new SmallDeepeningTask(sdt.table, newWNext, sdt.depth + 1,
+      //   sdt.moveTree, sdt.desiredDepth, 100,
+      //   false, sdt.gameNum,
+      //   sdt.mod, sdt.shouldIDraw, sdt.moveCountTree.concat(20))] // TODO: 20 is random, defo wrong this whole bit.
     }
   }
   //these new tasks go to a fifo array, we solve the tree bit by bit
@@ -1346,8 +1363,12 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
   }
   if (sdt.depth > sdt.desiredDepth) { //depth +1
 
-    resolverArray[sdt.depth][resolverArray[sdt.depth].length] = new ResolverItem(sdt.score,
-      sdt.moveTree, sdt.wPlayer); //this will fill in and then gets reduced to best movevalue only
+    resolverArray[sdt.depth][resolverArray[sdt.depth].length] = {
+      value: sdt.score,
+      moveTree: sdt.moveTree,
+    };
+    // new ResolverItem(sdt.score,
+    //   sdt.moveTree, sdt.wPlayer); //this will fill in and then gets reduced to best movevalue only
 
   } else {
     var isNegative = (sdt.depth & 1)
@@ -1360,19 +1381,32 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
         ? sdt.score - getHitScores(sdt.table, sdt.wNext)
         : sdt.score + getHitScores(sdt.table, sdt.wNext);
 
-      result[result.length] = new SmallDeepeningTask(
-        [], //no table
-        newWNext,
-        sdt.depth + 1,
-        sdt.moveTree,
-        sdt.desiredDepth,
-        newScore, //sdt.score + thisValue
-        sdt.wPlayer,
-        false,
-        sdt.gameNum,
-        sdt.mod,
-        sdt.shouldIDraw
-      )
+  // var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
+        
+      result[result.length] = {
+        // gameNum: sdt.gameNum,
+        table: [], //no table
+        wNext: newWNext,
+        depth: sdt.depth + 1,
+        moveTree: sdt.moveTree,
+        desiredDepth: sdt.desiredDepth,
+        score: newScore, //sdt.score + thisValue,
+        // mod: sdt.mod,
+        shouldIDraw: sdt.shouldIDraw,
+        // moveCountTree: sdt.moveCountTree.concat(20),
+      }
+      // new SmallDeepeningTask(
+      //   [], //no table
+      //   newWNext,
+      //   sdt.depth + 1,
+      //   sdt.moveTree,
+      //   sdt.desiredDepth,
+      //   newScore, //sdt.score + thisValue
+      //   false,
+      //   sdt.gameNum,
+      //   sdt.mod,
+      //   sdt.shouldIDraw
+      // )
     } else {
       //depth not solved, lets solve it further
 
@@ -1402,24 +1436,45 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
           valueToSave = sdt.score + thisValue
         }
         var newMoveTree = sdt.moveTree.concat([moveCoords, valueToSave]);
-        result[result.length] = new SmallDeepeningTask(
-          movedTable,
-          newWNext,
-          sdt.depth + 1,
-          newMoveTree,
-          sdt.desiredDepth,
-          valueToSave, //sdt.score + thisValue
-          sdt.wPlayer,
-          false,
-          sdt.gameNum,
-          sdt.mod,
-          sdt.shouldIDraw,
-          sdt.moveCountTree.concat(possibleMoves.length),
-        )
+
+// var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
+        
+        result[result.length] = {
+          // gameNum: sdt.gameNum,
+          table: movedTable, //no table
+          wNext: newWNext,
+          depth: sdt.depth + 1,
+          moveTree: newMoveTree,
+          desiredDepth: sdt.desiredDepth,
+          score: valueToSave, //sdt.score + thisValue,
+          // mod: sdt.mod,
+          shouldIDraw: sdt.shouldIDraw,
+          moveCountTree: sdt.moveCountTree.concat(possibleMoves.length),
+        }
+
+
+        // result[result.length] = new SmallDeepeningTask(
+        //   movedTable,
+        //   newWNext,
+        //   sdt.depth + 1,
+        //   newMoveTree,
+        //   sdt.desiredDepth,
+        //   valueToSave, //sdt.score + thisValue
+        //   false,
+        //   sdt.gameNum,
+        //   sdt.mod,
+        //   sdt.shouldIDraw,
+        //   sdt.moveCountTree.concat(possibleMoves.length),
+        // )
       }
     }
 
-    result[result.length] = new TriggerItem(sdt.depth + 1, sdt.moveTree, sdt.wPlayer)
+    result[result.length] = {
+      trItm: true,
+      depth: sdt.depth + 1,
+      moveTree: sdt.moveTree,
+    };
+    // result[result.length] = new TriggerItem(sdt.depth + 1, sdt.moveTree, sdt.wPlayer)
     //this will trigger move calc when processing array (will be placed before each set of smalltasks)
   }
   return result;
@@ -1439,7 +1494,6 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
     var tempDeepeningTask = {
       desiredDepth: deepeningTask.desiredDepth,
       smallDeepeningTasks: [deepeningTask],
-      wPlayer: deepeningTask.wPlayer,
       // mod: deepeningTask.mod,
       shouldIDraw: deepeningTask.shouldIDraw
     }
@@ -1471,7 +1525,7 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
   //   .getTime() - startedAt
 
   var ret = {
-    gameNum: deepeningTask.gameNum,
+    // gameNum: deepeningTask.gameNum,
     progress: retProgress,
     // timeItTook: timeItTook,
     score: resolverArray[2][0].value,
@@ -1538,20 +1592,19 @@ export function resolveDepth(depth, resolverArray) {
   }
   resolverArray[depth] = []
 }
-var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, wPlayer, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
-  // runs millions of times
-  this.gameNum = gameNum
-  this.wPlayer = wPlayer
-  this.table = table
-  this.wNext = wNext
-  this.depth = depth
-  this.moveTree = moveTree
-  this.desiredDepth = desiredDepth
-  this.score = score
-  this.mod = mod
-  this.shouldIDraw = shouldIDraw
-  this.moveCountTree = moveCountTree
-}
+// var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
+//   // runs millions of times
+//   this.gameNum = gameNum
+//   this.table = table
+//   this.wNext = wNext
+//   this.depth = depth
+//   this.moveTree = moveTree
+//   this.desiredDepth = desiredDepth
+//   this.score = score
+//   this.mod = mod
+//   this.shouldIDraw = shouldIDraw
+//   this.moveCountTree = moveCountTree
+// }
 
 export const DeepeningTask = function (smallMoveTask) { //keep this fast, designed for main thread and mainWorker ???not sure..     //smallMoveTask is a smallMoveTask, to be deepend further
   // runs once for each possible return move. few dozen times max per move
@@ -1607,25 +1660,21 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
   this.smallDeepeningTaskCounts = [0, 1] //this will be an array of the total created smalldeepeningtasks per depth, depth 0 has 0, depth 1 has one in this splitmove
 
 
-  var initialSmallDeepeningTask = new SmallDeepeningTask(this.thisTaskTable, !this.initialWNext, this.actualDepth, this.initialTreeMoves, this.desiredDepth, this.firstDepthValue, smallMoveTask.cfColor, false, this.gameNum, this.mod, this.shouldIDraw, [this.firstLevelMoveCount])
-  //this.value=initialSmallDeepeningTask.score
-
+  var initialSmallDeepeningTask = {
+    // gameNum: this.gameNum,
+    table: this.thisTaskTable,
+    wNext: !this.initialWNext,
+    depth: this.actualDepth,
+    moveTree: this.initialTreeMoves,
+    desiredDepth: this.desiredDepth,
+    score: this.firstDepthValue,
+    // mod: this.mod,
+    shouldIDraw: this.shouldIDraw,
+    moveCountTree: [this.firstLevelMoveCount],
+  }
   this.smallDeepeningTasks = [initialSmallDeepeningTask] //to be sent out for multiplying when processing for level 2 (unless desireddepth is 1)
   //this.pendingSmallDeepeningTasks=[]				//here we will keep the pending smalltasks: sent out 
   this.solvedSmallDeepeningTasks = [] //here we will keep the results until stepping to next depth, ready for next level when this.length equals count
 
 
-}
-
-var ResolverItem = function (inscore, inmoveTree, wPlayer) {
-  this.value = inscore
-  this.moveTree = inmoveTree
-  this.wPlayer = wPlayer
-}
-
-var TriggerItem = function (depth, moveTree, wPlayer) {		//these will be put in main deepeningTaskArray to trigger calculation of totals for each level
-  this.trItm = true
-  this.depth = depth
-  this.moveTree = moveTree
-  this.wPlayer = wPlayer
 }
