@@ -1538,8 +1538,8 @@ export function resolveDepth(depth, resolverArray) {
   }
   resolverArray[depth] = []
 }
-
 var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, wPlayer, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
+  // runs millions of times
   this.gameNum = gameNum
   this.wPlayer = wPlayer
   this.table = table
@@ -1554,40 +1554,22 @@ var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, 
 }
 
 export const DeepeningTask = function (smallMoveTask) { //keep this fast, designed for main thread and mainWorker ???not sure..     //smallMoveTask is a smallMoveTask, to be deepend further
-
-  // console.log({xxx: smallMoveTask.firstLevelMoveCount})
-
+  // runs once for each possible return move. few dozen times max per move
   this.shouldIDraw = smallMoveTask.sharedData.shouldIDraw
-
   this.firstLevelMoveCount = smallMoveTask.firstLevelMoveCount
-
   this.mod = smallMoveTask.mod
-
   this.gameNum = smallMoveTask.sharedData.gameNum
-
   this.progress = smallMoveTask.progress
-
   this.resolverArray = []
   this.initialWNext = smallMoveTask.sharedData.origWNext
-
-
   this.moveStr = smallMoveTask.moveCoords;
-  // [
-  //   smallMoveTask.moveCoords[0],
-  //   smallMoveTask.moveCoords[1],
-  //   smallMoveTask.moveCoords[2],
-  //   smallMoveTask.moveCoords[3]
-  // ]            //smallMoveTask.stepMove //all resulting tables relate to this movestring: deppeningtask is made of smallmovetask..
   this.initialTreeMoves = [this.moveStr] //to put in first smallmovetask
-
   this.startingTable = smallMoveTask.sharedData.origTable //this was calculated in advance when getting the first moves: that resulted in this.everything
   this.startingAllPastTables = smallMoveTask.sharedData.allPast
   this.thisTaskTable = moveIt(this.moveStr, this.startingTable, true) //this is the first and should be only time calculating this!!!!!
   //takes time
   this.firstDepthValue = this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] * 100         //smallMoveTask.firstDepthValue
-
   this.desiredDepth = smallMoveTask.sharedData.desiredDepth //we will deepen until depth reaches this number
-
   this.actualDepth = 1 //its 1 because we have 1st level resulting table fixed. 
   //increase this when generating deeper tables, loop while this is smaller than desiredDepth
 
@@ -1638,17 +1620,12 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
 var ResolverItem = function (inscore, inmoveTree, wPlayer) {
   this.value = inscore
   this.moveTree = inmoveTree
-
   this.wPlayer = wPlayer
-
 }
 
 var TriggerItem = function (depth, moveTree, wPlayer) {		//these will be put in main deepeningTaskArray to trigger calculation of totals for each level
   this.trItm = true
-
-
   this.depth = depth
-  //this.parentMove=parentMoveStr			//4 char string
   this.moveTree = moveTree
   this.wPlayer = wPlayer
 }
