@@ -1,3 +1,58 @@
+export const rotateTable = (table) => {
+  const result = [];
+  for (let i = 0; i < 8; i += 1) {
+    result[i] = [];
+    for (let j = 0; j < 8; j += 1) {
+      result[i][j] = table[j][7 - i];
+    }
+  }
+  return result;
+}
+
+export const toFen = (game) => {
+  let fen = '';
+  for (const row of rotateTable(game.table)) {
+    let emptyCellCount = 0;
+    
+    cellLoop:
+    for (const cell of row) {
+      if (emptyCellCount) {
+        if (cell[0] === 0) {
+          emptyCellCount += 1;
+          continue cellLoop;
+        }
+        fen = `${fen}${emptyCellCount}`;
+        emptyCellCount = 0;
+      }
+
+      if (cell[0] === 0) {
+        emptyCellCount += 1;
+        continue cellLoop;
+      }
+
+      let pieceChar = [0, 'p', 'b', 'n', 'r', 'q', 0, 0, 0, 'k'][cell[1]];
+      if (cell[0] === 2) pieceChar = pieceChar.toUpperCase();
+      fen = `${fen}${pieceChar}`;
+    }
+
+    if (emptyCellCount) fen = `${fen}${emptyCellCount}`;
+    fen = `${fen}/`;
+  }
+
+  fen = fen.replace(/\/$/, '');
+
+  fen = `${fen} ${game.wNext ? 'w' : 'b'} KQkq - 0 ${game.moveCount}`; // TODO: en pass, castling ability, half & full movecounts are fake 
+
+  return fen;
+};
+
+export const moveStringToMoveCoords = (moveString) => ([
+  moveString.charCodeAt(0)-97,
+  moveString[1] -1,
+  moveString.charCodeAt(2)-97,
+  moveString[3] -1,
+]);
+
 // needed for service
 var MoveToSend = function (moveCoord, index, dbTableWithMoveTask, splitMoveId, firstLevelMoveCount) {
 
