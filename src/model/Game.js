@@ -2,8 +2,18 @@ import { getInitialTable } from "./table";
 import uuid from 'uuid-random';
 export class GameModel {
   constructor() {
-    this.moveCount = 0
+    this.moveCount = 
+    
+    // fen compatible vars below
+    this.fullMoveNumber = 1;
+    this.halfMoveClock = 0;
+    this.castlingAvailability = 'KQkq';
+    this.enPassantTarget = '-';
 
+    this.completed = false;
+
+
+    // from old engine
     this.pendingMoveCount = 0
     this.desiredDepth = 0	//will set after creating, at each move step
     this.returnedMoves = []
@@ -39,7 +49,7 @@ export class GameModel {
       // this.pollNum = 1;
       this.allPastTables = []
 
-    this.created = Date.now();
+    // this.created = Date.now();
     this.moved = null
 
     this.table = getInitialTable();

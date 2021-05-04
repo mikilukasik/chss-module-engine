@@ -46,6 +46,6 @@ export const getInitialTable = () => {
 
   // table = addMovesToTable(table, true)
 
-  return addMovesToTable(table, true);
+  return addMovesToTable(table, true).table;
   // table;
 };

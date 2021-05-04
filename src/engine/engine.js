@@ -41,7 +41,19 @@ export const toFen = (game) => {
 
   fen = fen.replace(/\/$/, '');
 
-  fen = `${fen} ${game.wNext ? 'w' : 'b'} KQkq - 0 ${game.moveCount}`; // TODO: en pass, castling ability, half & full movecounts are fake 
+  fen = `${
+    fen
+  } ${
+    game.wNext ? 'w' : 'b'
+  } ${
+    game.castlingAvailability
+  } ${
+    game.enPassantTarget
+  } ${
+    game.halfMoveClock
+  } ${
+    game.fullMoveNumber
+  }`;
 
   return fen;
 };
@@ -180,18 +192,34 @@ export const MoveTaskN = function (dbTable, mod) {
 };
 
 export function addMovesToTable(originalTable, whiteNext, dontClearInvalid, returnMoveCoords) {
+  let totalMoveCount = 0;
   var myCol = whiteNext ? 2 : 1;
   for (var i = 0; i < 8; i += 1) {
     for (var j = 0; j < 8; j += 1) {
       if (originalTable[i][j][0] === myCol) {
         // var returnMoveCoords = [];
         originalTable[i][j][5] = canMove(i, j, whiteNext, originalTable, false, false, [0], dontClearInvalid, returnMoveCoords); //:  canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm, dontRemoveInvalid) { //, speedy) {
+        totalMoveCount += originalTable[i][j][5].length;
       } else {
         originalTable[i][j][5] = [];
       }
     }
   }
-  return originalTable;
+  return { table: originalTable, totalMoveCount };
+}
+
+function addMovesToTableFast(originalTable, whiteNext, dontClearInvalid, returnMoveCoords) {
+  var myCol = whiteNext ? 2 : 1;
+  for (var i = 0; i < 8; i += 1) {
+    for (var j = 0; j < 8; j += 1) {
+      if (originalTable[i][j][0] === myCol) {
+        originalTable[i][j][5] = canMove(i, j, whiteNext, originalTable, false, false, [0], dontClearInvalid, returnMoveCoords); //:  canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm, dontRemoveInvalid) { //, speedy) {
+        continue;
+      }
+      originalTable[i][j][5] = [];
+    }
+  }
+  // return { table: originalTable, totalMoveCount };
 }
 
 export const evalFuncs = {
@@ -804,54 +832,76 @@ export function moveInTable(moveCoords, dbTable, isLearner) {
   dbTable.moves.push(toPush);
   dbTable.table = moveIt(moveCoords, dbTable.table); //	<-= 1-= 1moves it
 
+  dbTable.enPassantTarget = (
+    dbTable.table[moveCoords[2]][moveCoords[3]][1] === 1  && // moved a pawn
+    Math.abs(moveCoords[1] - moveCoords[3]) === 2 // made 2 square move
+  ) 
+  ? `${String.fromCharCode(moveCoords[0] + 97)}${(moveCoords[1] + moveCoords[3]) / 2 + 1}`
+  : '-';
+
   dbTable.wNext = !dbTable.wNext;
+
+  if (dbTable.wNext) dbTable.fullMoveNumber += 1;
+
   dbTable.pollNum += 1;
   dbTable.moveCount += 1;
-  dbTable.table = addMovesToTable(dbTable.table, dbTable.wNext);
+
+  const { table, totalMoveCount } = addMovesToTable(dbTable.table, dbTable.wNext);
+  dbTable.table = table;
+
+  if (totalMoveCount === 0) {
+    dbTable.completed = true;
+    if (captured(dbTable.table, dbTable.wNext)) {
+      dbTable[dbTable.wNext ? 'blackWon' : 'whiteWon'] = true;
+    } else {
+      dbTable.isDraw = true;
+    }
+  }
+
   var pushThis = createState(dbTable.table);
   dbTable.allPastTables.push(pushThis);
   return dbTable;
 }
 
-function captured(table, color) {
+function captured(table, isWhite) {
   var tempMoves = [];
   var myCol = 1;
-  if (color) myCol += 1; //myCol is 2 when white
+  if (isWhite) myCol += 1; //myCol is 2 when white
 
   for (var i = 0; i < 8; i += 1) {
     for (var j = 0; j < 8; j += 1) {
       if (table[i][j][1] === 9 && table[i][j][0] === myCol) {
         //itt a kiraly
 
-        tempMoves = bishopCanMove(i, j, color, table, [0]);
+        tempMoves = bishopCanMove(i, j, isWhite, table, [0]);
         for (var tempMoveCount = 0; tempMoveCount < tempMoves.length; tempMoveCount += 1) {
           if (table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 5 ||
             table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 2) {
             return true;
           }
         }
-        tempMoves = rookCanMove(i, j, color, table, [0]);
+        tempMoves = rookCanMove(i, j, isWhite, table, [0]);
         for (var tempMoveCount = 0; tempMoveCount < tempMoves.length; tempMoveCount += 1) {
           if (table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 5 ||
             table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 4) {
             return true;
           }
         }
-        tempMoves = horseCanMove(i, j, color, table, [0]);
+        tempMoves = horseCanMove(i, j, isWhite, table, [0]);
         for (var tempMoveCount = 0; tempMoveCount < tempMoves.length; tempMoveCount += 1) {
           if (table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 3) {
             return true;
           }
         }
-        if (color ? j < 7 : j > 0) {
-          tempMoves = pawnCanMove(i, j, color, table, [0]);
+        if (isWhite ? j < 7 : j > 0) {
+          tempMoves = pawnCanMove(i, j, isWhite, table, [0]);
           for (var tempMoveCount = 0; tempMoveCount < tempMoves.length; tempMoveCount += 1) {
             if (table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 1) {
               return true;
             }
           }
         }
-        tempMoves = kingCanMove(i, j, color, table, [0]);
+        tempMoves = kingCanMove(i, j, isWhite, table, [0]);
         for (var tempMoveCount = 0; tempMoveCount < tempMoves.length; tempMoveCount += 1) {
           if (table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 9) {
             return true;
@@ -1467,7 +1517,7 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
 
       var possibleMoves = []
       //below returns a copied table, should opt out for speed!!!!!!!
-      addMovesToTable(sdt.table, sdt.wNext, true, possibleMoves) //this puts moves in strings, should keep it fastest possible
+      addMovesToTableFast(sdt.table, sdt.wNext, true, possibleMoves) //this puts moves in strings, should keep it fastest possible
 
       //true to 				//it will not remove invalid moves to keep fast 
       //keep illegal			//we will remove them later when backward processing the tree
