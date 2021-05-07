@@ -1,8 +1,23 @@
 import { getInitialTable } from "./table";
 import uuid from 'uuid-random';
 export class GameModel {
-  constructor() {
-    this.moveCount = 
+  constructor({
+    wPlayer = null,
+    bPlayer = null,
+    wName = 'Computer',
+    bName = 'Computer',
+    computerPlaysWhite = false,
+    computerPlaysBlack = false,
+  }) {
+
+    this.wPlayer = wPlayer;
+    this.bPlayer = bPlayer;
+    this.wName = wName;
+    this.bName = bName;
+    this.computerPlaysWhite = computerPlaysWhite;
+    this.computerPlaysBlack = computerPlaysBlack;
+
+    this.moveCount = 0;
     
     // fen compatible vars below
     this.fullMoveNumber = 1;
