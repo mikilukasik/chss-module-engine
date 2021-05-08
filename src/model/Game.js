@@ -9,13 +9,14 @@ export class GameModel {
     computerPlaysWhite = false,
     computerPlaysBlack = false,
   }) {
-
     this.wPlayer = wPlayer;
     this.bPlayer = bPlayer;
     this.wName = wName;
     this.bName = bName;
     this.computerPlaysWhite = computerPlaysWhite;
     this.computerPlaysBlack = computerPlaysBlack;
+
+    this.status = 'active';
 
     this.moveCount = 0;
     

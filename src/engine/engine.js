@@ -1428,6 +1428,10 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
   var result = []
   var newWNext = !sdt.wNext;
   if (sdt.depth === 2) { //on 2nd level remove invalids. would be nice on all levels, but performance is bad
+    // below was not better than the above ??!!
+    // if (sdt.depth < sdt.desiredDepth) { //on 2nd level remove invalids. would be nice on all levels, but performance is bad
+
+
     if (captured(sdt.table, newWNext)) {
       //invalid move, sakkban maradt
 
