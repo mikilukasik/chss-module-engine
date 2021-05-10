@@ -804,6 +804,18 @@ function createState(table) {
   return stateToRemember.join('');
 }
 
+export const aptStringToTable = (aptString) => {
+  const table = [[], [], [], [], [], [], [], []];
+
+  for (let i = 0; i < 64; i += 1) {
+    const numberToUse = aptString.charCodeAt(i) - 55;
+    const remainer = numberToUse % 10
+    table[Math.floor(i / 8)][i % 8] = [remainer ? Math.floor(numberToUse / 10) : 0, remainer];
+  }
+
+  return table;
+};
+
 function getPushString(table, moveCoords) {
   const whatM = table[moveCoords[0]][moveCoords[1]];
   // var cWhatMoves = String(whatM[0]); //color of whats moving
