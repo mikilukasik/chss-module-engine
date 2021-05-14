@@ -1,5 +1,6 @@
 import { getInitialTable } from "./table";
 import uuid from 'uuid-random';
+import { addMovesToTable, tableToAptString } from "../engine/engine";
 export class GameModel {
   constructor({
     wPlayer = null,
@@ -8,6 +9,8 @@ export class GameModel {
     bName = 'Computer',
     computerPlaysWhite = false,
     computerPlaysBlack = false,
+    table,
+    wNext = true,
   }) {
     this.wPlayer = wPlayer;
     this.bPlayer = bPlayer;
@@ -58,17 +61,23 @@ export class GameModel {
 
 
 
-    this.wNext = true;
+    this.wNext = wNext;
       // this.aiOn = false;
       // this.chat = [];
       this.moves = [];
       // this.pollNum = 1;
-      this.allPastTables = []
 
     // this.created = Date.now();
     this.moved = null
 
-    this.table = getInitialTable();
+    if (table) {
+      this.isCustom = true;
+      addMovesToTable(table, wNext);
+    }
+    this.table = table || getInitialTable();
+
+    this.allPastTables = [tableToAptString(this.table)]
+
 
     // this.table = new Array(8) //create 8x8 array
     // for (var i = 0; i < 8; i++) {

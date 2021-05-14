@@ -1,3 +1,5 @@
+const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 40]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
+
 export const rotateTable = (table) => {
   const result = [];
   for (let i = 0; i < 8; i += 1) {
@@ -237,13 +239,13 @@ export const evalFuncs = {
         switch (y[0]) {
           case 1:
 
-            result.bVal += y[1];
+            result.bVal += PIECE_VALUES[ y[1] ];
 
             break;
 
           case 2:
 
-            result.wVal += y[1];
+            result.wVal += PIECE_VALUES[ y[1] ];
 
             break;
 
@@ -272,7 +274,7 @@ export const evalFuncs = {
   checkIfLooped: function (newTable, allPastTables) {
 
     var seenCount = 0;
-    var thisState = createState(newTable);
+    var thisState = tableToAptString(newTable);
 
     allPastTables.forEach(function (pastTable) {
       if (pastTable === thisState) seenCount += 1;
@@ -509,7 +511,7 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
           rtnPushHimBack += 7 - lookJ;
         }
 
-        tableValue += origTable[lookI][lookJ][1];
+        tableValue += PIECE_VALUES[ origTable[lookI][lookJ][1] ];
 
       } else {
 
@@ -523,7 +525,7 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
             rtnPushHimBack -= (7 - lookJ) / 10;
           }
           //or this tblevalue:
-          tableValue -= origTable[lookI][lookJ][1];
+          tableValue -= PIECE_VALUES[ origTable[lookI][lookJ][1] ];
         }
       }
     }
@@ -624,7 +626,7 @@ function pushAidA(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatHits) {
   if (target[0] === 0) return true; // can go further if it was empty space, no hit
 
   // we found a hit
-  var thisHit = target[1]; //normal hivalue
+  var thisHit = PIECE_VALUES[ target[1] ]; //normal hivalue
   if (target[6]) thisHit -= whatHits; // protected
 
   if (hitSummmm[0] < thisHit) hitSummmm[0] = thisHit;
@@ -790,7 +792,7 @@ function horseCanMove(k, l, isWhite, moveTable, hitSummm) {
   return canMoveTo;
 }
 
-function createState(table) {
+export function tableToAptString(table) {
   // make this string and concat!!!!!!!!!!!!!!!!!!!!
   var stateToRemember = [];
   for (var i = 0; i < 8; i += 1) {
@@ -870,7 +872,7 @@ export function moveInTable(moveCoords, dbTable, isLearner) {
     }
   }
 
-  var pushThis = createState(dbTable.table);
+  var pushThis = tableToAptString(dbTable.table);
   dbTable.allPastTables.push(pushThis);
   return dbTable;
 }
@@ -1184,13 +1186,13 @@ function pushAidXN(k, l, x, y, c, table, /* protectedArray, iHitMoves, /*protect
       // protectScore[0] += 1;
 
 
-      /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(table[k][l][1]) //protectedBy
+      /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //protectedBy
       // protectedArray[x][y] = true; //protected
     } else {
       //opps piece is there
       // possibleMoves[8 * x + y] = true; // TODO: did this break the stats?
       // iHitMoves[iHitMoves.length] = [k, l, x, y, table[k][l][1], table[x][y][1]]; //[who k,l where to x,y who, hits]
-      /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(table[k][l][1]) //attackedBy
+      /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //attackedBy
 
     }
     return true;
@@ -1211,12 +1213,12 @@ function pushAidNN(k, l, x, y, c, table, /*protectedArray, iHitMoves, /*protectS
     //my piece is there
     // protectScore[0] += 1;
     // protectedArray[x][y] = true; //protected		//moveit will clear, fastmove not???!!!
-    /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(table[k][l][1]) //protectedBy
+    /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //protectedBy
 
   } else {
     //opps piece is there
     // possibleMoves[8 * x + y] = true;
-    /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(table[k][l][1]) //attackedBy
+    /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //attackedBy
 
     // iHitMoves[iHitMoves.length] = [k, l, x, y, table[k][l][1], table[x][y][1]]; //[who k,l where to x,y who, hits]
   }
@@ -1458,7 +1460,7 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
         depth: sdt.depth + 1,
         moveTree: sdt.moveTree,
         desiredDepth: sdt.desiredDepth,
-        score: 100,
+        score: 10000, // still all bs, this bit has to go soon
         // mod: sdt.mod,
         shouldIDraw: sdt.shouldIDraw,
         moveCountTree: sdt.moveCountTree.concat(20), // TODO: 20 is random, defo wrong this whole bit.
@@ -1547,7 +1549,7 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
 
 
         var whatGetsHit = sdt.table[moveCoords[2]][moveCoords[3]];
-        var thisValue = whatGetsHit[1] * 100 //piece value, should += 1 when en-pass
+        var thisValue = PIECE_VALUES[ whatGetsHit[1] ] * 100 //piece value, should += 1 when en-pass
 
         var valueToSave
 
@@ -1742,7 +1744,8 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
   this.startingAllPastTables = smallMoveTask.sharedData.allPast
   this.thisTaskTable = moveIt(this.moveStr, this.startingTable, true) //this is the first and should be only time calculating this!!!!!
   //takes time
-  this.firstDepthValue = this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] * 100         //smallMoveTask.firstDepthValue
+  this.firstDepthValue = PIECE_VALUES[ this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] ] * 100         //smallMoveTask.firstDepthValue
+  this.initialTreeMoves = [this.moveStr, this.firstDepthValue] //to put in first smallmovetask
   this.desiredDepth = smallMoveTask.sharedData.desiredDepth //we will deepen until depth reaches this number
   this.actualDepth = 1 //its 1 because we have 1st level resulting table fixed. 
   //increase this when generating deeper tables, loop while this is smaller than desiredDepth
@@ -1779,7 +1782,6 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
 
 
   this.smallDeepeningTaskCounts = [0, 1] //this will be an array of the total created smalldeepeningtasks per depth, depth 0 has 0, depth 1 has one in this splitmove
-
 
   var initialSmallDeepeningTask = {
     // gameNum: this.gameNum,
