@@ -1,4 +1,4 @@
-const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 40]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
+const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 64]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
 
 export const rotateTable = (table) => {
   const result = [];
@@ -1744,7 +1744,10 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
   this.startingAllPastTables = smallMoveTask.sharedData.allPast
   this.thisTaskTable = moveIt(this.moveStr, this.startingTable, true) //this is the first and should be only time calculating this!!!!!
   //takes time
-  this.firstDepthValue = PIECE_VALUES[ this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] ] * 100         //smallMoveTask.firstDepthValue
+
+  const pawnMoveVal = this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1 ? 3 : 0;
+
+  this.firstDepthValue = PIECE_VALUES[ this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] ] * 100 + pawnMoveVal;       //smallMoveTask.firstDepthValue
   this.initialTreeMoves = [this.moveStr, this.firstDepthValue] //to put in first smallmovetask
   this.desiredDepth = smallMoveTask.sharedData.desiredDepth //we will deepen until depth reaches this number
   this.actualDepth = 1 //its 1 because we have 1st level resulting table fixed. 
