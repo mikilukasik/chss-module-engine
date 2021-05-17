@@ -1296,27 +1296,22 @@ const getMultiplier = (x, y)=>Math.floor(Math.pow(7 - Math.abs (3.5 - x) - Math.
 const multiplierTable = Array.from({ length: 8 }).map((row, x) => Array.from({ length:8 }).map((cell, y) => getMultiplier(x, y)));
 
 function newCanMove(k, l, moveTable, c) {
-  //[who k,l where to x,y who, hits]
-  // const c = moveTable[k][l][0];
-  const centerMultiplier = multiplierTable[k][l];
-
-  var what = moveTable[k][l][1];
-  switch (what) {
+  switch (moveTable[k][l][1]) {
     case 1:
       pawnCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return centerMultiplier;
+      return multiplierTable[k][l];
     case 2:
       bishopCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return centerMultiplier * 3;
+      return multiplierTable[k][l] * 3;
     case 3:
       horseCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return centerMultiplier * 3;
+      return multiplierTable[k][l] * 3;
     case 4:
       rookCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return centerMultiplier * 5;
+      return multiplierTable[k][l] * 5;
     case 5:
       queenCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return centerMultiplier * 9;
+      return multiplierTable[k][l] * 9;
     case 9:
       kingCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
       return 0;
@@ -1360,7 +1355,7 @@ export function getHitScores(origTable, wNext) {
 
       if (origTable[lookI][lookJ][0] === c) {
         // my piece, will count attack/protect scores, but not hitscore
-        if (origTable[lookI][lookJ][2]) attackScore -= origTable[lookI][lookJ][1]; // if attacked deduckt pieceVal from attack score
+        if (origTable[lookI][lookJ][2]) attackScore -= PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // if attacked deduckt pieceVal from attack score
         if (origTable[lookI][lookJ][3]) protectScore += origTable[lookI][lookJ][3].length; // if protected add protector count to protect score
         continue cellLoop; // nothing else to do here
       }
@@ -1370,7 +1365,7 @@ export function getHitScores(origTable, wNext) {
         if (origTable[lookI][lookJ][3]) protectScore -= origTable[lookI][lookJ][3].length; // if protected deduct protector count from protect score
         if (!origTable[lookI][lookJ][2]) continue cellLoop; // if not attacked then we're done here
 
-        attackScore += origTable[lookI][lookJ][1]; // add pieceVal to attack score
+        attackScore += PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // add pieceVal to attack score
 
         let thisCellValue = 0;
         let weakestProtector;
@@ -1379,12 +1374,12 @@ export function getHitScores(origTable, wNext) {
         let hasMoreProtectors;
 
         if (!origTable[lookI][lookJ][3]) { // cell has no protector
-          hitScore += origTable[lookI][lookJ][1]; // this cell can be hit, add value and check next cell
+          hitScore += PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // this cell can be hit, add value and check next cell
           continue cellLoop;
         }
         // cell has protector
 
-        thisCellValue += origTable[lookI][lookJ][1]; // add cell value
+        thisCellValue += PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // add cell value
 
         origTable[lookI][lookJ][2].sort((a, b) => b - a); // weakest attacker to the end;
         weakestAttacker = origTable[lookI][lookJ][2].pop();
