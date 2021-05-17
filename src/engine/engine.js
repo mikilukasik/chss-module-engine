@@ -1,4 +1,5 @@
 const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 64]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
+// const PIECE_STRENGTH = [0, 1, 3, 3, 5, 9, 0, 0, 0, 3];
 
 export const rotateTable = (table) => {
   const result = [];
@@ -10,6 +11,19 @@ export const rotateTable = (table) => {
   }
   return result;
 }
+
+const getCastlingAvailability = ({ table }) => {
+  let caStr = '';
+  if (table[4][0][3]) { // white king not moved
+    if (table[7][0][3]) caStr = `${caStr}K`;
+    if (table[0][0][3]) caStr = `${caStr}Q`;
+  }
+  if (table[4][7][3]) { // black king not moved
+    if (table[7][7][3]) caStr = `${caStr}k`;
+    if (table[0][7][3]) caStr = `${caStr}q`;
+  }
+  return caStr || '-';
+};
 
 export const toFen = (game) => {
   let fen = '';
@@ -48,7 +62,7 @@ export const toFen = (game) => {
   } ${
     game.wNext ? 'w' : 'b'
   } ${
-    game.castlingAvailability
+    getCastlingAvailability(game)
   } ${
     game.enPassantTarget
   } ${
@@ -56,6 +70,8 @@ export const toFen = (game) => {
   } ${
     game.fullMoveNumber
   }`;
+
+  console.log({ fen })
 
   return fen;
 };
@@ -1276,43 +1292,57 @@ function fastMove(moveCoords, intable, dontProtect, hitValue) {
   return thistable;
 }
 
-function newCanMove(k, l, moveTable) {
+const getMultiplier = (x, y)=>Math.floor(Math.pow(7 - Math.abs (3.5 - x) - Math.abs (3.5 - y), 4) / 500);
+const multiplierTable = Array.from({ length: 8 }).map((row, x) => Array.from({ length:8 }).map((cell, y) => getMultiplier(x, y)));
+
+function newCanMove(k, l, moveTable, c) {
   //[who k,l where to x,y who, hits]
-  const c = moveTable[k][l][0];
+  // const c = moveTable[k][l][0];
+  const centerMultiplier = multiplierTable[k][l];
+
   var what = moveTable[k][l][1];
   switch (what) {
     case 1:
       pawnCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      break;
+      return centerMultiplier;
     case 2:
       bishopCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      break;
+      return centerMultiplier * 3;
     case 3:
       horseCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      break;
+      return centerMultiplier * 3;
     case 4:
       rookCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      break;
+      return centerMultiplier * 5;
     case 5:
       queenCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      break;
+      return centerMultiplier * 9;
     case 9:
       kingCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      break;
+      return 0;
   }
 }
 
 export function getHitScores(origTable, wNext) {
   const c = wNext ? 2 : 1;
 
+  let centerScore = 0;
+
   // write data on cells
   for (var lookI = 0; lookI < 8; lookI += 1) {
     for (var lookJ = 0; lookJ < 8; lookJ += 1) { //look through the table
-      if (origTable[lookI][lookJ][0] === 0) continue; // empty cell
-      newCanMove(lookI, lookJ, origTable);
+      const pieceColor = origTable[lookI][lookJ][0];
+      if (pieceColor === 0) continue; // empty cell
+      if (pieceColor === c) {
+        centerScore += newCanMove(lookI, lookJ, origTable, pieceColor);
+        continue;
+      }
+      centerScore -= newCanMove(lookI, lookJ, origTable, pieceColor);
     }
   }
-
+  
+  // if (Math.random() < 0.00001) console.log({ centerScore })
+  
   // process that data gathered above
   let hitScore = 0;
   let protectScore = 0;
@@ -1431,7 +1461,7 @@ export function getHitScores(origTable, wNext) {
     }
   }
 
-  return hitScore * 100 + attackScore + protectScore;
+  return hitScore * 100 + attackScore + protectScore + centerScore;
 };
 
 
@@ -1745,7 +1775,7 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
   this.thisTaskTable = moveIt(this.moveStr, this.startingTable, true) //this is the first and should be only time calculating this!!!!!
   //takes time
 
-  const pawnMoveVal = this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1 ? 3 : 0;
+  const pawnMoveVal = this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1 ? 1 : 0;
 
   this.firstDepthValue = PIECE_VALUES[ this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] ] * 100 + pawnMoveVal;       //smallMoveTask.firstDepthValue
   this.initialTreeMoves = [this.moveStr, this.firstDepthValue] //to put in first smallmovetask
@@ -1803,4 +1833,45 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
   this.solvedSmallDeepeningTasks = [] //here we will keep the results until stepping to next depth, ready for next level when this.length equals count
 
 
+}
+
+export function singleThreadAi(tempDbTable, depth, cb, mod) {
+  var dbTable = JSON.parse(JSON.stringify(tempDbTable));
+  dbTable.moveTask = new MoveTaskN(dbTable, mod)
+  dbTable.moveTask.sharedData.desiredDepth = depth
+  var tempMoves = new SplitMove(dbTable).movesToSend
+  var result = []
+  tempMoves.forEach(function (smallMoveTask, index) {
+    var deepeningTask = new DeepeningTask(smallMoveTask)
+    oneDeeper(deepeningTask) //this will make about 30 smalldeepeningtasks from the initial 1 and create deepeningtask.resolverarray
+    //first item in deepeningtask.smalldeepeningtasks is trigger
+    var res = []
+    while (deepeningTask.smallDeepeningTasks.length > 1) {
+      var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop()
+      smallDeepeningTask.progress = deepeningTask.progress
+      var res2 = solveDeepeningTask(smallDeepeningTask, true)
+      res2.value = res2.score
+      res[res.length] = res2;
+    }
+
+    var tempResolveArray = [[], res, []]
+    resolveDepth(2, tempResolveArray)
+
+    var pushAgain = tempResolveArray[1][0]
+    var moveCoords = pushAgain.moveTree[0]//.slice(0, 4)
+
+    pushAgain.score = pushAgain.value
+    pushAgain.move = moveCoords
+    result[result.length] = pushAgain;
+  });
+
+  result.sort((a, b) => b.score - a.score);
+
+  var finalResult = {
+    result: result,
+    winningMove: result[0],
+    moveCoords: result[0].moveTree[0]//.slice(0, 4)
+  }
+  if (cb) cb(finalResult)
+  return finalResult
 }
