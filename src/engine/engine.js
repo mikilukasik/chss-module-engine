@@ -1,5 +1,5 @@
 const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 64]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
-// const PIECE_STRENGTH = [0, 1, 3, 3, 5, 9, 0, 0, 0, 3];
+const ATTACK_VALUES = [0, 0.5, 1.5, 1.5, 2.5, 4.5, 0, 0, 0, 32]
 
 export const rotateTable = (table) => {
   const result = [];
@@ -70,8 +70,6 @@ export const toFen = (game) => {
   } ${
     game.fullMoveNumber
   }`;
-
-  console.log({ fen })
 
   return fen;
 };
@@ -1292,7 +1290,7 @@ function fastMove(moveCoords, intable, dontProtect, hitValue) {
   return thistable;
 }
 
-const getMultiplier = (x, y)=>Math.floor(Math.pow(7 - Math.abs (3.5 - x) - Math.abs (3.5 - y), 4) / 500);
+const getMultiplier = (x, y)=>Math.floor(Math.pow(7 - Math.abs (3.5 - x) - Math.abs (3.5 - y), 4) / 200);
 const multiplierTable = Array.from({ length: 8 }).map((row, x) => Array.from({ length:8 }).map((cell, y) => getMultiplier(x, y)));
 
 function newCanMove(k, l, moveTable, c) {
@@ -1318,6 +1316,21 @@ function newCanMove(k, l, moveTable, c) {
   }
 }
 
+// hitScore * 400 + allHitScore * 5 + attackScore + protectScore + centerScore
+// const stats = {
+//   hitScoreMin: 0,
+//   allHitScoreMin: 0,
+//   attackScoreMin: 0,
+//   protectScoreMin: 0,
+//   centerScoreMin: 0,
+//   timeout: null,
+//   hitScoreMax: 0,
+//   allHitScoreMax: 0,
+//   attackScoreMax: 0,
+//   protectScoreMax: 0,
+//   centerScoreMax: 0,
+// };
+
 export function getHitScores(origTable, wNext) {
   const c = wNext ? 2 : 1;
 
@@ -1340,6 +1353,7 @@ export function getHitScores(origTable, wNext) {
   
   // process that data gathered above
   let hitScore = 0;
+  let allHitScore = 0
   let protectScore = 0;
   let attackScore = 0;
 
@@ -1355,17 +1369,17 @@ export function getHitScores(origTable, wNext) {
 
       if (origTable[lookI][lookJ][0] === c) {
         // my piece, will count attack/protect scores, but not hitscore
-        if (origTable[lookI][lookJ][2]) attackScore -= PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // if attacked deduckt pieceVal from attack score
-        if (origTable[lookI][lookJ][3]) protectScore += origTable[lookI][lookJ][3].length; // if protected add protector count to protect score
+        if (origTable[lookI][lookJ][2]) attackScore -= ATTACK_VALUES[ origTable[lookI][lookJ][1] ]; // if attacked deduckt pieceVal from attack score
+        if (origTable[lookI][lookJ][3]) protectScore += origTable[lookI][lookJ][3].length * multiplierTable[lookI][lookJ]; // if protected add protector count to protect score
         continue cellLoop; // nothing else to do here
       }
 
       if (origTable[lookI][lookJ][0] !== c) {
         // opponent's piece
-        if (origTable[lookI][lookJ][3]) protectScore -= origTable[lookI][lookJ][3].length; // if protected deduct protector count from protect score
+        if (origTable[lookI][lookJ][3]) protectScore -= origTable[lookI][lookJ][3].length * multiplierTable[lookI][lookJ]; // if protected deduct protector count from protect score
         if (!origTable[lookI][lookJ][2]) continue cellLoop; // if not attacked then we're done here
 
-        attackScore += PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // add pieceVal to attack score
+        attackScore += ATTACK_VALUES[ origTable[lookI][lookJ][1] ]; // add pieceVal to attack score
 
         let thisCellValue = 0;
         let weakestProtector;
@@ -1374,7 +1388,10 @@ export function getHitScores(origTable, wNext) {
         let hasMoreProtectors;
 
         if (!origTable[lookI][lookJ][3]) { // cell has no protector
-          hitScore += PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // this cell can be hit, add value and check next cell
+          // this cell can be hit, add value and check next cell
+          const thisHitScore = PIECE_VALUES[ origTable[lookI][lookJ][1] ];
+          allHitScore += thisHitScore; 
+          hitScore = Math.max(hitScore, thisHitScore);
           continue cellLoop;
         }
         // cell has protector
@@ -1393,7 +1410,8 @@ export function getHitScores(origTable, wNext) {
           weakestAttacker < weakestProtector // the protector worth more than the 1st attacker used
         ) {
           // break here, protector will not be used, doesn't worth it
-          hitScore += thisCellValue;
+          allHitScore += thisCellValue; 
+          hitScore = Math.max(hitScore, thisCellValue);
           continue cellLoop;
         }
         // weakest attacker will be hit
@@ -1401,7 +1419,10 @@ export function getHitScores(origTable, wNext) {
         thisCellValue -= weakestAttacker; // deduct weakest attacker
 
         if (!hasMoreAttackers) { // no more attackers
-          if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
+          if (thisCellValue > 0) {
+            allHitScore += thisCellValue; 
+            hitScore = Math.max(hitScore, thisCellValue);
+          }//hitScore += thisCellValue; // add cellvalue if worth to hit
           continue cellLoop;
         };
         // there are more attackers
@@ -1414,7 +1435,11 @@ export function getHitScores(origTable, wNext) {
             weakestProtector < weakestAttacker
           ) {
             // break here, attacker will not be used, doesn't worth it
-            if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
+            if (thisCellValue > 0) {
+              // add cellvalue if worth to hit
+              allHitScore += thisCellValue; 
+              hitScore = Math.max(hitScore, thisCellValue);
+            }
             continue cellLoop;
           }
           // weakest protector will be hit
@@ -1423,7 +1448,11 @@ export function getHitScores(origTable, wNext) {
 
           // while (true) {
           if (!hasMoreProtectors) { // no more protectors
-            if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
+            if (thisCellValue > 0) {
+              // add cellvalue if worth to hit
+              allHitScore += thisCellValue; 
+              hitScore = Math.max(hitScore, thisCellValue);
+            }
             continue cellLoop;
           };
           // there are more protectors
@@ -1436,7 +1465,11 @@ export function getHitScores(origTable, wNext) {
             weakestAttacker < weakestProtector
           ) {
             // break here, attacker will not be used, doesn't worth it
-            if (thisCellValue > 0) hitScore += thisCellValue; // add cellvalue if worth to hit
+            if (thisCellValue > 0) {
+              // add cellvalue if worth to hit
+              allHitScore += thisCellValue; 
+              hitScore = Math.max(hitScore, thisCellValue);
+            }
             continue cellLoop;
           }
           // weakest attacker will be hit
@@ -1444,7 +1477,11 @@ export function getHitScores(origTable, wNext) {
           thisCellValue -= weakestAttacker;
 
           if (!hasMoreAttackers) { // no more attackers
-            if (thisCellValue > 0) hitScore += thisCellValue;
+            if (thisCellValue > 0) {
+              // add cellvalue if worth to hit
+              allHitScore += thisCellValue; 
+              hitScore = Math.max(hitScore, thisCellValue);
+            }
             continue cellLoop;
           };
           // there are more attackers
@@ -1456,7 +1493,22 @@ export function getHitScores(origTable, wNext) {
     }
   }
 
-  return hitScore * 100 + attackScore + protectScore + centerScore;
+  // stats.hitScoreMin = Math.min(stats.hitScoreMin, hitScore);
+  // stats.allHitScoreMin = Math.min(stats.allHitScoreMin, allHitScore);
+  // stats.attackScoreMin = Math.min(stats.attackScoreMin, attackScore);
+  // stats.protectScoreMin = Math.min(stats.protectScoreMin, protectScore);
+  // stats.centerScoreMin = Math.min(stats.centerScoreMin, centerScore);
+
+  // stats.hitScoreMax = Math.max(stats.hitScoreMax, hitScore);
+  // stats.allHitScoreMax = Math.max(stats.allHitScoreMax, allHitScore);
+  // stats.attackScoreMax = Math.max(stats.attackScoreMax, attackScore);
+  // stats.protectScoreMax = Math.max(stats.protectScoreMax, protectScore);
+  // stats.centerScoreMax = Math.max(stats.centerScoreMax, centerScore);
+
+  // if (stats.timeout) clearTimeout(stats.timeout);
+  // stats.timeout = setTimeout(() => {console.log(stats)}, 500)
+
+  return hitScore * 400 + allHitScore + attackScore + protectScore + centerScore;
 };
 
 
@@ -1574,7 +1626,7 @@ function solveSmallDeepeningTask(sdt, resolverArray) {
 
 
         var whatGetsHit = sdt.table[moveCoords[2]][moveCoords[3]];
-        var thisValue = PIECE_VALUES[ whatGetsHit[1] ] * 100 //piece value, should += 1 when en-pass
+        var thisValue = PIECE_VALUES[ whatGetsHit[1] ] * 400 //piece value, should += 1 when en-pass
 
         var valueToSave
 
@@ -1772,7 +1824,7 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
 
   const pawnMoveVal = this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1 ? 1 : 0;
 
-  this.firstDepthValue = PIECE_VALUES[ this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] ] * 100 + pawnMoveVal;       //smallMoveTask.firstDepthValue
+  this.firstDepthValue = PIECE_VALUES[ this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] ] * 400 + pawnMoveVal;       //smallMoveTask.firstDepthValue
   this.initialTreeMoves = [this.moveStr, this.firstDepthValue] //to put in first smallmovetask
   this.desiredDepth = smallMoveTask.sharedData.desiredDepth //we will deepen until depth reaches this number
   this.actualDepth = 1 //its 1 because we have 1st level resulting table fixed. 
