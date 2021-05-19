@@ -92,6 +92,8 @@ var MoveToSend = function (moveCoord, index, dbTableWithMoveTask, splitMoveId, f
 
   this.mod = moveTask.mod
 
+  this.currentBests = moveTask.currentBests
+
   this.moveIndex = index
 
   this.moveCoords = moveCoord //one move only
@@ -172,12 +174,15 @@ export const MoveTaskN = function (dbTable, mod) {
   var shouldIDraw = evalFuncs.shouldIDraw(dbTable)
   this.shouldIDraw = shouldIDraw
 
+  const currentBests = [];
+  this.currentBests = currentBests;
+
   // console.log({shouldIDraw})
 
   if (mod) this.mod = mod
 
   this.sharedData = {
-
+    currentBests,
     shouldIDraw: shouldIDraw,
 
     origWNext: dbTable.wNext,
@@ -1511,15 +1516,14 @@ export function getHitScores(origTable, wNext) {
   return hitScore * 400 + allHitScore + attackScore + protectScore + centerScore;
 };
 
-
-function solveSmallDeepeningTask(sdt, resolverArray, currentBests = [], remaingSdts = [{ trItm: true }]) {
+function solveSmallDeepeningTask(sdt, resolverArray, remaingSdts = [{ trItm: true }]) {
   //gets one task, produces an array of more tasks
   //or empty array when done
-  
+
   if (sdt.trItm) { //we solved all moves for a table, time to go backwards
     //do some work in resolverArray		
     //then clear array on that depth
-    resolveDepth(sdt.depth, resolverArray, currentBests);
+    resolveDepth(sdt.depth, resolverArray, sdt.currentBests, remaingSdts);
     return [];
   }
 
@@ -1543,11 +1547,10 @@ function solveSmallDeepeningTask(sdt, resolverArray, currentBests = [], remaingS
       : sdt.score + getHitScores(sdt.table, sdt.wNext);
 
     if (
-      (newScore >= currentBests[sdt.depth - 1] && isNegative) ||
-      (newScore <= currentBests[sdt.depth - 1] && !isNegative)
+      (newScore >= sdt.currentBests[sdt.depth - 1] && isNegative) ||
+      (newScore <= sdt.currentBests[sdt.depth - 1] && !isNegative)
     ) {
       // this move is already worse than what we have, so will def. won't be used. we can throw away the remaining sdts on this level
-      // if (Math.random() < 0.001) console.log({ newScore, x: currentBests[sdt.depth - 1], isNegative })
       while (!remaingSdts[remaingSdts.length - 1].trItm) remaingSdts.pop();
     }
       
@@ -1559,6 +1562,7 @@ function solveSmallDeepeningTask(sdt, resolverArray, currentBests = [], remaingS
       desiredDepth: sdt.desiredDepth,
       score: newScore, //sdt.score + thisValue,
       shouldIDraw: sdt.shouldIDraw,
+      currentBests: sdt.currentBests,
     }
   } else {
     //depth not solved, lets solve it further
@@ -1591,6 +1595,7 @@ function solveSmallDeepeningTask(sdt, resolverArray, currentBests = [], remaingS
         score: valueToSave, //sdt.score + thisValue,
         shouldIDraw: sdt.shouldIDraw,
         moveCountTree: sdt.moveCountTree.concat(possibleMoves.length),
+        currentBests: sdt.currentBests,
       }
     }
   }
@@ -1599,6 +1604,7 @@ function solveSmallDeepeningTask(sdt, resolverArray, currentBests = [], remaingS
     trItm: true,
     depth: sdt.depth + 1,
     moveTree: sdt.moveTree,
+    currentBests: sdt.currentBests,
   };
   // result[result.length] = new TriggerItem(sdt.depth + 1, sdt.moveTree, sdt.wPlayer)
   //this will trigger move calc when processing array (will be placed before each set of smalltasks)
@@ -1620,13 +1626,13 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
       desiredDepth: deepeningTask.desiredDepth,
       smallDeepeningTasks: [deepeningTask],
       // mod: deepeningTask.mod,
-      shouldIDraw: deepeningTask.shouldIDraw
+      shouldIDraw: deepeningTask.shouldIDraw,
+      currentBests: deepeningTask.currentBests,
     }
     deepeningTask = tempDeepeningTask
   }
 
   var resolverArray = [] //multidim, for each depth the results, will be updated a million times
-  const currentBests = [];
 
   // TODO: why is this +2?
   var p2 = deepeningTask.desiredDepth + 2;
@@ -1634,12 +1640,14 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
     resolverArray[i] = [];
   }
 
+  const currentBests = deepeningTask.currentBests;
+
   while (deepeningTask.smallDeepeningTasks.length > 0) {
     //length is 1 at first, then just grows until all has reached the level. evetually there will be nothing to do and this loop exists
 
     var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop();
 
-    var resultingSDTs = solveSmallDeepeningTask(smallDeepeningTask, resolverArray, currentBests, deepeningTask.smallDeepeningTasks);
+    var resultingSDTs = solveSmallDeepeningTask(smallDeepeningTask, resolverArray, deepeningTask.smallDeepeningTasks);
 
 
     for (var l = resultingSDTs.length - 1; l >= 0; l -= 1) {
@@ -1654,6 +1662,7 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
     // gameNum: deepeningTask.gameNum,
     progress: retProgress,
     // timeItTook: timeItTook,
+    currentBests,
     score: resolverArray[2][0].value,
     moveTree: resolverArray[2][0].moveTree//.join(',')
   }
@@ -1668,7 +1677,7 @@ export function oneDeeper(deepeningTask) { //only takes original first level dee
   var resolverArray = []
   var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop()
   var tempTasks = solveSmallDeepeningTask(smallDeepeningTask,
-    smallDeepeningTask.resolverArray, [], deepeningTask.smallDeepeningTasks) //, counter)
+    smallDeepeningTask.resolverArray, deepeningTask.smallDeepeningTasks) //, counter)
   while (tempTasks.length > 0) {
     var tempTask = tempTasks.pop()
     deepeningTask.smallDeepeningTasks[deepeningTask.smallDeepeningTasks.length] = tempTask;
@@ -1678,7 +1687,7 @@ export function oneDeeper(deepeningTask) { //only takes original first level dee
 
 }
 
-export function resolveDepth(depth, resolverArray, currentBests = []) {
+export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdts = [{ trItm: true }, { trItm: true }]) {
   if (resolverArray[depth].length > 0) {
     var raDm1 = resolverArray[depth - 1];
     if (depth & 1) {
@@ -1688,13 +1697,12 @@ export function resolveDepth(depth, resolverArray, currentBests = []) {
             return {
               value: currentValue.value,
               moveTree: currentValue.moveTree
-            } //currentValue
-
+            }
           } else {
             return {
               value: previousValue.value,
               moveTree: previousValue.moveTree
-            } //previousValue
+            }
           }
         }
       )
@@ -1703,6 +1711,9 @@ export function resolveDepth(depth, resolverArray, currentBests = []) {
         ? raDm1[raDm1.length - 1].value
         : Math.min(currentBests[depth - 1], raDm1[raDm1.length - 1].value);
 
+      if (currentBests[depth - 2] >= currentBests[depth - 1]) {
+          while (remaingSdts.length && !remaingSdts[remaingSdts.length - 1].trItm) remaingSdts.pop();
+      }
     } else {
       raDm1[raDm1.length] = resolverArray[depth].reduce(
         function (previousValue, currentValue, index, array) {
@@ -1724,9 +1735,13 @@ export function resolveDepth(depth, resolverArray, currentBests = []) {
         ? raDm1[raDm1.length - 1].value
         : Math.max(currentBests[depth - 1], raDm1[raDm1.length - 1].value);
 
+      if (currentBests[depth - 2] <= currentBests[depth - 1]) {
+        while (remaingSdts.length && !remaingSdts[remaingSdts.length - 1].trItm) remaingSdts.pop();
+      }
     }
   }
-  resolverArray[depth] = []
+  resolverArray[depth] = [];
+  delete currentBests[depth];
 }
 // var SmallDeepeningTask = function (table, wNext, depth, moveTree, desiredDepth, score, stopped, gameNum, mod, shouldIDraw, moveCountTree) {
 //   // runs millions of times
@@ -1745,6 +1760,7 @@ export function resolveDepth(depth, resolverArray, currentBests = []) {
 export const DeepeningTask = function (smallMoveTask) { //keep this fast, designed for main thread and mainWorker ???not sure..     //smallMoveTask is a smallMoveTask, to be deepend further
   // runs once for each possible return move. few dozen times max per move
   this.shouldIDraw = smallMoveTask.sharedData.shouldIDraw
+  this.currentBests = smallMoveTask.sharedData.currentBests
   this.firstLevelMoveCount = smallMoveTask.firstLevelMoveCount
   this.mod = smallMoveTask.mod
   this.gameNum = smallMoveTask.sharedData.gameNum
@@ -1810,6 +1826,7 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
     // mod: this.mod,
     shouldIDraw: this.shouldIDraw,
     moveCountTree: [this.firstLevelMoveCount],
+    currentBests: this.currentBests,
   }
   this.smallDeepeningTasks = [initialSmallDeepeningTask] //to be sent out for multiplying when processing for level 2 (unless desireddepth is 1)
   //this.pendingSmallDeepeningTasks=[]				//here we will keep the pending smalltasks: sent out 
@@ -1838,7 +1855,7 @@ export function singleThreadAi(tempDbTable, depth, cb, mod) {
     }
 
     var tempResolveArray = [[], res, []]
-    resolveDepth(2, tempResolveArray)
+    resolveDepth(2, tempResolveArray, smallDeepeningTask.currentBests)
 
     var pushAgain = tempResolveArray[1][0]
     var moveCoords = pushAgain.moveTree[0]//.slice(0, 4)
