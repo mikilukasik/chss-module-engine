@@ -1,6 +1,10 @@
 const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 64]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
 const ATTACK_VALUES = [0, 0.5, 1.5, 1.5, 2.5, 4.5, 0, 0, 0, 32]
 
+
+const getPreferCentreMultiplier = (x, y)=>(Math.pow(7 - Math.abs (3.5 - x) - Math.abs (3.5 - y), 4) / 200);
+const PREFER_CENTER_TABLE = Array.from({ length: 8 }).map((row, x) => Array.from({ length:8 }).map((cell, y) => getPreferCentreMultiplier(x, y)));
+
 export const getNormalizedMoveTree = ({ moveTree }) => moveTree.map(m => Array.isArray(m) ? coordsToMoveString(...m) : m.toString().padStart(5)).join(' ');
 
 export const rotateTable = (table) => {
@@ -1542,26 +1546,23 @@ function fastMove(moveCoords, intable, dontProtect, hitValue) {
   return thistable;
 }
 
-const getMultiplier = (x, y)=>Math.floor(Math.pow(7 - Math.abs (3.5 - x) - Math.abs (3.5 - y), 4) / 200);
-const multiplierTable = Array.from({ length: 8 }).map((row, x) => Array.from({ length:8 }).map((cell, y) => getMultiplier(x, y)));
-
 function newCanMove(k, l, moveTable, c) {
   switch (moveTable[k][l][1]) {
     case 1:
       pawnCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return multiplierTable[k][l];
+      return PREFER_CENTER_TABLE[k][l];
     case 2:
       bishopCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return multiplierTable[k][l] * 3;
+      return PREFER_CENTER_TABLE[k][l] * 3;
     case 3:
       horseCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return multiplierTable[k][l] * 3;
+      return PREFER_CENTER_TABLE[k][l] * 3;
     case 4:
       rookCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return multiplierTable[k][l] * 5;
+      return PREFER_CENTER_TABLE[k][l] * 5;
     case 5:
       queenCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
-      return multiplierTable[k][l] * 9;
+      return PREFER_CENTER_TABLE[k][l] * 9;
     case 9:
       kingCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
       return 0;
@@ -1629,13 +1630,13 @@ export function getHitScores(origTable, wNext) {
             return -300;
           }
         }
-        if (origTable[lookI][lookJ][3]) protectScore += origTable[lookI][lookJ][3].length * multiplierTable[lookI][lookJ]; // if protected add protector count to protect score
+        if (origTable[lookI][lookJ][3]) protectScore += origTable[lookI][lookJ][3].length * PREFER_CENTER_TABLE[lookI][lookJ]; // if protected add protector count to protect score
         continue cellLoop; // nothing else to do here
       }
 
       if (origTable[lookI][lookJ][0] !== c && hitScore >= 0) {
         // opponent's piece
-        if (origTable[lookI][lookJ][3]) protectScore -= origTable[lookI][lookJ][3].length * multiplierTable[lookI][lookJ]; // if protected deduct protector count from protect score
+        if (origTable[lookI][lookJ][3]) protectScore -= origTable[lookI][lookJ][3].length * PREFER_CENTER_TABLE[lookI][lookJ]; // if protected deduct protector count from protect score
         if (!origTable[lookI][lookJ][2]) continue cellLoop; // if not attacked then we're done here
 
         attackScore += ATTACK_VALUES[ origTable[lookI][lookJ][1] ]; // add pieceVal to attack score
@@ -1960,6 +1961,42 @@ export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdt
   
   if (resolverArray[depth].length === 0) {
     // there are no valid return moves
+    if (depth === 2) {
+      const isWin = captured(sdt.thisTaskTable, !inverse);
+        
+      if (isWin) {
+        raDm1[raDm1.length] = {
+          value: 30000,
+          moveTree: [sdt.moveStr, 'WIN'],
+        };
+
+        resolverArray[depth] = [];
+        delete currentBests[depth];
+        return;
+      } 
+      // this move would yield a draw.
+
+      if (sdt.shouldIDraw) {
+        raDm1[raDm1.length] = {
+          value: 6000,
+          moveTree: [sdt.moveStr, 'DRAW'],
+        };
+
+        resolverArray[depth] = [];
+        delete currentBests[depth];
+        return;
+      }
+
+      raDm1[raDm1.length] = {
+        value: -6000,
+        moveTree: [sdt.moveStr, 'DRAW'],
+      };
+
+      resolverArray[depth] = [];
+      delete currentBests[depth];
+      return;
+    }
+
 
     raDm1[raDm1.length] = {
       value: inverse ? -10000000 : 10000000,
