@@ -100,13 +100,15 @@ var MoveToSend = function (moveCoord, index, dbTableWithMoveTask, splitMoveId, f
 
   this.currentBests = moveTask.currentBests
 
+  this.origTable = moveTask//.origTable.map(row => row.map(cell => ([cell[0], cell[1]])))
+
   this.moveIndex = index
 
   this.moveCoords = moveCoord //one move only
 
   this.sharedData = moveTask.sharedData
 
-  this.sharedData.origTable = dbTableWithMoveTask.table
+  this.sharedData.origTable = dbTableWithMoveTask.table.map(row => row.map(cell => ([cell[0], cell[1]])))
 
   this.sharedData.gameNum = dbTableWithMoveTask._id
 
@@ -188,6 +190,7 @@ export const MoveTaskN = function (dbTable, mod) {
 
   const currentBests = [];
   this.currentBests = currentBests;
+  this.origTable = dbTable.origTable;
 
   if (mod) this.mod = mod
 
@@ -196,6 +199,7 @@ export const MoveTaskN = function (dbTable, mod) {
     shouldIDraw: shouldIDraw,
     repeatedPastTables: this.repeatedPastTables,
     origWNext: dbTable.wNext,
+    origTable: dbTable.table,
 
     desiredDepth: dbTable.desiredDepth,
     oppKingPos: whereIsTheKing(dbTable.table, !dbTable.wNext),
@@ -1917,6 +1921,7 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
       }
     } catch (e) {
       if (e !== 'illegal') throw(e);
+      console.log(JSON.stringify(resolverArray, null, 2))
     }
     
     //call it again if there are tasks
@@ -2082,6 +2087,7 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
   // runs once for each possible return move. few dozen times max per move
   this.shouldIDraw = smallMoveTask.sharedData.shouldIDraw
   this.currentBests = smallMoveTask.sharedData.currentBests
+  this.origTable = smallMoveTask.sharedData.origTable || smallMoveTask.origTable
   this.firstLevelMoveCount = smallMoveTask.firstLevelMoveCount
   this.mod = smallMoveTask.mod
   this.gameNum = smallMoveTask.sharedData.gameNum
@@ -2156,6 +2162,7 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
     shouldIDraw: this.shouldIDraw,
     moveCountTree: [this.firstLevelMoveCount],
     currentBests: this.currentBests,
+    origTable: this.origTable,
   }
   this.smallDeepeningTasks = [initialSmallDeepeningTask] //to be sent out for multiplying when processing for level 2 (unless desireddepth is 1)
   //this.pendingSmallDeepeningTasks=[]				//here we will keep the pending smalltasks: sent out 
@@ -2178,6 +2185,7 @@ export function singleThreadAi(tempDbTable, depth, cb, mod) {
     while (deepeningTask.smallDeepeningTasks.length > 1) {
       var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop()
       smallDeepeningTask.progress = deepeningTask.progress
+      smallDeepeningTask.origTable = deepeningTask.sharedData.origTable
       var res2 = solveDeepeningTask(smallDeepeningTask, true)
       res2.value = res2.score
       res[res.length] = res2;
