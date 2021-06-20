@@ -1,3 +1,5 @@
+import { isCaptured } from "../utils/isCaptured";
+
 export const getKingMoves = (position, board) => {
   const targets = [];
 
@@ -53,7 +55,16 @@ export const getKingMoves = (position, board) => {
     if (board[targetRight] === 0 || (board[targetRight] >> 3) !== color) targets[targets.length] = targetRight;
   }
   
-  // TODO: don't forget castling
+  // castling
+  if (board[65] === 0) return targets;
 
+  if (color) {
+    if ((board[65] & 8) === 8 && board[61] === 0 && board[62] === 0 && !isCaptured(board, 61, 1)) targets[targets.length] = 62;
+    if ((board[65] & 4) === 4 && board[59] === 0 && board[58] === 0 && board[57] === 0 && !isCaptured(board, 59, 1)) targets[targets.length] = 58;
+  } else {
+    if ((board[65] & 2) === 2 && board[5] === 0 && board[6] === 0 && !isCaptured(board, 5, 0)) targets[targets.length] = 6;
+    if ((board[65] & 1) === 1 && board[3] === 0 && board[1] === 0 && board[2] === 0 && !isCaptured(board, 3, 0)) targets[targets.length] = 2;
+  }
+  
   return targets;
 };

@@ -1,13 +1,13 @@
 import { cellStrToIndex } from "./cellStrToIndex";
 
 const pieces = ['', 'p', 'b', 'n', 'r', 'q', 'k', '', '', 'P', 'B', 'N', 'R', 'Q', 'K'];
-const castlingValues = ['-', 'K', 'Q', '', 'k', '', '', '', 'q'];
+const castlingValues = ['-', 'q', 'k', '', 'Q', '', '', '', 'K'];
 
 export const fen2intArray = (fen) => {
   const [boardStr, next, castling, enpassantTarget] = fen.split(' ');
   
   const buffer = new ArrayBuffer(67);     // 64 cells + wNext + castling + enPassantTarget
-  const board = new Uint8Array(buffer);
+  const board = new Int8Array(buffer);
   
   let nextByteIndex = 0;
   for (const char of boardStr.split('')) {
