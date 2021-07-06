@@ -1,18 +1,19 @@
 import { getKnightMoves } from "../moveGenerators/getKnightMoves";
 
 export const isCaptured = (board, cellIndex, color) => {
-  const rank = cellIndex >> 3;
+  const rank = cellIndex >>> 3;
+  const file = cellIndex & 7;
 
   // check if attacked by pawn
   if (color === 0) {
-    if (rank < 7) {
-      if (board[cellIndex + 7] === 9) return true;
-      if (board[cellIndex + 9] === 9) return true;
+    if (rank < 6) {
+      if (file > 0 && board[cellIndex + 7] === 9) return true;
+      if (file < 7 && board[cellIndex + 9] === 9) return true;
     }
   } else {
     if (rank > 1) {
-      if (board[cellIndex - 7] === 1) return true;
-      if (board[cellIndex - 9] === 1) return true;
+      if (file < 7 && board[cellIndex - 7] === 1) return true;
+      if (file > 0 && board[cellIndex - 9] === 1) return true;
     }
   }
 
@@ -30,12 +31,14 @@ export const isCaptured = (board, cellIndex, color) => {
   const attackingBishop = attackingColorPrefix + 2;
   const attackingRook = attackingColorPrefix + 4;
   const attackingQueen = attackingColorPrefix + 5;
+  const attackingKing = attackingColorPrefix + 6;
 
   const lastCellUpLeft = cellIndex - Math.min(rank, maxMovesLeft) * 9;
   for (let currentCellIndex = cellIndex - 9; currentCellIndex >= lastCellUpLeft; currentCellIndex -= 9) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 9) return true;
     break;
   }
 
@@ -44,6 +47,7 @@ export const isCaptured = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 7) return true;
     break;
   }
 
@@ -52,6 +56,7 @@ export const isCaptured = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 7) return true;
     break;
   }
 
@@ -60,6 +65,7 @@ export const isCaptured = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 9) return true;
     break;
   }
 
@@ -68,6 +74,7 @@ export const isCaptured = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 8) return true;
     break;
   }
 
@@ -76,6 +83,7 @@ export const isCaptured = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 1) return true;
     break;
   }
 
@@ -84,6 +92,7 @@ export const isCaptured = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 8) return true;
     break;
   }
 
@@ -92,6 +101,7 @@ export const isCaptured = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
+    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 1) return true;
     break;
   }
 

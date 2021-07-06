@@ -1,3 +1,5 @@
+// TODO: this is probably not working
+
 import { generateLegalMoves } from "../moveGenerators/generateLegalMoves";
 import { getMovedBoard } from "../utils/getMovedBoard";
 
@@ -5,8 +7,6 @@ export const getLegalMoveCount = (board, depth) => {
   const depthMinusOne = depth - 1;
   
   let moveCount = 0;
-  // let captures = 0;
-  // const capturesPerPiece = {};
 
   const movesPerDepth = [];
   const moveIndexPerDepth = new Int8Array(depth);
@@ -34,12 +34,6 @@ export const getLegalMoveCount = (board, depth) => {
 
       movesPerDepth[currentDepth].forEach(move => {
         const targetCell = move & 63;
-        // if (boardsPerDepth[currentDepth][moveIndex][targetCell]) {
-        //   captures += 1;
-        //   const sourceCell = move >> 6;
-        //   const piece = boardsPerDepth[currentDepth][moveIndex][sourceCell];
-        //   capturesPerPiece[piece] = (capturesPerPiece[piece] || 0) + 1;
-        // }
       });
 
 
@@ -57,8 +51,6 @@ export const getLegalMoveCount = (board, depth) => {
 
     currentDepth = currentDepthPlusOne;
   } while (true);
-
-  // console.log({ boardsPerDepth, movesPerDepth, moveIndexPerDepth });
 
   return moveCount;
 };

@@ -1,7 +1,7 @@
 export const getPawnMoves = (position, board, isWhite) => {
   const targets = [];
 
-  const rank = position >> 3;
+  const rank = position >>> 3;
   const file = position & 7;
   const canHitRight = file < 7;
   const canHitLeft = file > 0;
@@ -21,7 +21,7 @@ export const getPawnMoves = (position, board, isWhite) => {
       if (board[rightHitTarget] === 0) {
         if (rank === 3 && board[66] === rightHitTarget) targets[targets.length] = rightHitTarget; // en passant
       } 
-      else if ((board[rightHitTarget] >> 3) === 0) targets[targets.length] = rightHitTarget; // target is black piece
+      else if ((board[rightHitTarget] >>> 3) === 0) targets[targets.length] = rightHitTarget; // target is black piece
     }
 
     if (canHitLeft) {
@@ -29,7 +29,7 @@ export const getPawnMoves = (position, board, isWhite) => {
       if (board[leftHitTarget] === 0) { // target is empty
         if (rank === 3 && board[66] === leftHitTarget) targets[targets.length] = leftHitTarget; // en passant
       } 
-      else if ((board[leftHitTarget] >> 3) === 0) targets[targets.length] = leftHitTarget;
+      else if ((board[leftHitTarget] >>> 3) === 0) targets[targets.length] = leftHitTarget;
     }
 
     return targets;
@@ -50,7 +50,7 @@ export const getPawnMoves = (position, board, isWhite) => {
     if (board[rightHitTarget] === 0) { // target is empty
       if (rank === 4 && board[66] === rightHitTarget) targets[targets.length] = rightHitTarget; // en passant
     } 
-    else if ((board[rightHitTarget] >> 3) === 1) targets[targets.length] = rightHitTarget; // white target
+    else if ((board[rightHitTarget] >>> 3) === 1) targets[targets.length] = rightHitTarget; // white target
   }
 
   if (canHitLeft) {
@@ -58,7 +58,7 @@ export const getPawnMoves = (position, board, isWhite) => {
     if (board[leftHitTarget] === 0) {
       if (rank === 4 && board[66] === leftHitTarget) targets[targets.length] = leftHitTarget; // en passant
     }
-    else if ((board[leftHitTarget] >> 3) === 1) targets[targets.length] = leftHitTarget;
+    else if ((board[leftHitTarget] >>> 3) === 1) targets[targets.length] = leftHitTarget;
   }
 
   return targets;

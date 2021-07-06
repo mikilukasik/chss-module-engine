@@ -1,3 +1,61 @@
+import { getMovedBoard } from "../engine_new/utils/getMovedBoard";
+import { generateLegalMoves } from "../engine_new/moveGenerators/generateLegalMoves";
+import { isCaptured } from "../engine_new/utils/isCaptured";
+import { board2fen } from "../engine_new/transformers/board2fen";
+import { evaluateBoard } from "../engine_new/evaluators/evaluateBoard";
+
+const moveToMoveCoords = (move) => ([
+  (move >> 10) & 7,
+  7 - (move >>> 13),
+  move & 7,
+  7 - ((move >> 3) & 7),
+]);
+
+export const moveString2move = (moveStr) => (
+  ((8 - Number(moveStr[1])) << 13) +
+  ((moveStr.charCodeAt(0) - 97) << 10) +
+  ((8 - Number(moveStr[3])) << 3) +
+  (moveStr.charCodeAt(2) - 97)
+);
+
+export const moveInBoard = (move, dbTable) => {
+  dbTable.bitBoard = getMovedBoard(move, dbTable.board);
+  dbTable.board = Array.from(dbTable.bitBoard);
+  dbTable.wNext = !dbTable.wNext;
+  if (dbTable.wNext) dbTable.fullMoveNumber += 1;
+
+  dbTable.pollNum += 1;
+  dbTable.moveCount += 1;
+  dbTable.nextMoves = Array.from(generateLegalMoves(dbTable.bitBoard));
+
+  if (dbTable.nextMoves.length === 0) {
+    dbTable.completed = true;
+
+    // TODO: the below might be wrong wNext
+    if (isCaptured(dbTable.bitBoard, dbTable.bitBoard.indexOf(6 + (dbTable.bitBoard[64] << 3)), dbTable.bitBoard[64])) {
+      dbTable[dbTable.wNext ? 'blackWon' : 'whiteWon'] = true;
+    } else {
+      dbTable.isDraw = true;
+    }
+  }
+
+  dbTable.allPastFens.push(board2fen(dbTable.bitBoard))
+
+  const pastFensOccurranceCount = dbTable.allPastFens.reduce((p, c) => {
+    p[c] = (p[c] || 0) + 1;
+    return p;
+  }, {});
+  dbTable.repeatedPastFens = Object.keys(pastFensOccurranceCount).filter(key => pastFensOccurranceCount[key] > 1);
+
+  dbTable.origScore = evaluateBoard(dbTable.bitBoard);
+  dbTable.dontLoop = dbTable.bitBoard[64] ? dbTable.origScore > -0.5 : dbTable.origScore < -0.5;
+  return dbTable;
+};
+
+
+// ^^^^^^ for new engine
+
+
 const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 64]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
 const ATTACK_VALUES = [0, 0.5, 1.5, 1.5, 2.5, 4.5, 0, 0, 0, 32]
 
@@ -1770,107 +1828,6 @@ export function getHitScores(origTable, wNext) {
 
   return hitScore * 400 + /* allHitScore */ + attackScore + protectScore + centerScore;
 };
-
-function solveSmallDeepeningTask(sdt, resolverArray, remaingSdts = [{ trItm: true }]) {
-  //gets one task, produces an array of more tasks
-  //or empty array when done
-
-  if (sdt.trItm) { //we solved all moves for a table, time to go backwards
-    //do some work in resolverArray		
-    //then clear array on that depth
-    resolveDepth(sdt.depth, resolverArray, sdt.currentBests, remaingSdts, sdt);
-    return [];
-  }
-
-  if (sdt.depth > sdt.desiredDepth) { //depth +1
-    resolverArray[sdt.depth][resolverArray[sdt.depth].length] = {
-      value: sdt.score,
-      moveTree: sdt.moveTree,
-    };
-    return [];
-  }
-
-  var result = []
-  var newWNext = !sdt.wNext;
-  var isNegative = !!(sdt.depth & 1);
-  
-  if (sdt.depth === sdt.desiredDepth) {
-    //////depth reached, eval table
-
-    const newScore = isNegative
-      ? sdt.score - getHitScores(sdt.table, sdt.wNext)
-      : sdt.score + getHitScores(sdt.table, sdt.wNext);
-
-    if (
-      (newScore >= sdt.currentBests[sdt.depth - 1] && isNegative) ||
-      (newScore <= sdt.currentBests[sdt.depth - 1] && !isNegative)
-    ) {
-      // this move is already worse than what we have, so will def. won't be used. we can throw away the remaining sdts on this level
-      let lastTrItmIndex = remaingSdts.length - 1;
-      while (!remaingSdts[lastTrItmIndex].trItm) lastTrItmIndex -= 1;
-      remaingSdts.length = lastTrItmIndex + 1;
-      // while (!remaingSdts[remaingSdts.length - 1].trItm) remaingSdts.pop(); // redo
-    }
-      
-    result[result.length] = {
-      table: [], //no table
-      wNext: newWNext,
-      depth: sdt.depth + 1,
-      moveTree: sdt.moveTree,
-      desiredDepth: sdt.desiredDepth,
-      score: newScore, //sdt.score + thisValue,
-      shouldIDraw: sdt.shouldIDraw,
-      currentBests: sdt.currentBests,
-    }
-  } else {
-    //depth not solved, lets solve it further
-
-    var possibleMoves = []
-    //below returns a copied table, should opt out for speed!!!!!!!
-    addMovesToTableFast(sdt.table, sdt.wNext, true, possibleMoves) //this puts moves in strings, should keep it fastest possible
-    //here we have possiblemoves filled in with good, bad and illegal moves
-
-    for (var i = possibleMoves.length - 1; i >= 0; i -= 1) {
-      var moveCoords = possibleMoves[i]
-      var movedTable = []
-      movedTable = fastMove(moveCoords, sdt.table, true) //speed! put this if out of here, makeamove only false at the last run
-
-      var whatGetsHit = sdt.table[moveCoords[2]][moveCoords[3]];
-      var thisValue = PIECE_VALUES[ whatGetsHit[1] ] * 400 //piece value, should += 1 when en-pass
-      if (sdt.table[moveCoords[0]][moveCoords[1]][1] === 1 && [0, 7].includes(moveCoords[3])) {
-        // pawn becomes queen
-        thisValue += (PIECE_VALUES[5] - PIECE_VALUES[1]) * 400;
-      }
-      const valueToSave = isNegative
-        ? sdt.score - thisValue
-        : sdt.score + thisValue;
-
-      var newMoveTree = sdt.moveTree.concat([moveCoords, valueToSave]);
-      
-      result[result.length] = {
-        table: movedTable, //no table
-        wNext: newWNext,
-        depth: sdt.depth + 1,
-        moveTree: newMoveTree,
-        desiredDepth: sdt.desiredDepth,
-        score: valueToSave, //sdt.score + thisValue,
-        shouldIDraw: sdt.shouldIDraw,
-        moveCountTree: sdt.moveCountTree.concat(possibleMoves.length),
-        currentBests: sdt.currentBests,
-      }
-    }
-  }
-
-  result[result.length] = {
-    trItm: true,
-    depth: sdt.depth + 1,
-    moveTree: sdt.moveTree,
-    currentBests: sdt.currentBests,
-  };
-  // result[result.length] = new TriggerItem(sdt.depth + 1, sdt.moveTree, sdt.wPlayer)
-  //this will trigger move calc when processing array (will be placed before each set of smalltasks)
-  return result;
-}
 
 export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve the whole deepening task on one thread
   //will return number of smallTasks solved for testing??!!!!!!!!!!!!!!!

@@ -6,11 +6,10 @@ import { generatePseudoMoves } from "./generatePseudoMoves"
 
 export const generateLegalMoves = (board) => {
   const pseudoMoves = generatePseudoMoves(board);
-
   const legalMoves = pseudoMoves.filter((move) => {
     const movedBoard = getMovedBoard(move, board);
     return !isCaptured(movedBoard, movedBoard.indexOf(6 + (board[64] << 3)), board[64])
   });
 
-  return new Int16Array(legalMoves);
+  return new Uint16Array(legalMoves);
 };

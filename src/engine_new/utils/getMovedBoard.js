@@ -1,5 +1,5 @@
 export const getMovedBoard = (move, board) => {
-  const sourceIndex = move >> 6;
+  const sourceIndex = move >>> 10;
   const targetIndex = move & 63;
   const copiedBoard = new Int8Array(board);
 
@@ -18,8 +18,8 @@ export const getMovedBoard = (move, board) => {
       if (sourceIndex - targetIndex === 16) copiedBoard[66] = targetIndex + 8; // white pawn double move, set en passant target
       
       // pawn can become queen
-      if (targetIndex >> 3 === 0) copiedBoard[targetIndex] = 13;
-      if (targetIndex >> 3 === 7) copiedBoard[targetIndex] = 5;
+      if (targetIndex >>> 3 === 0) copiedBoard[targetIndex] = 13;
+      if (targetIndex >>> 3 === 7) copiedBoard[targetIndex] = 5;
       break;
     
     case 4:
@@ -35,24 +35,23 @@ export const getMovedBoard = (move, board) => {
     case 6:
       // king
       copiedBoard[66] = 0; // clear en passant target;
-      if (board[65] === 0) break; // no possible castling 
 
-      // copiedBoard[65] = board[65] & (((board[sourceIndex] & 8) === 0) /* black */ ? 3 : 12); // clear castling availablility for moved king
+      if (board[65] === 0) break; // no possible castling 
 
       if (sourceIndex === 4) {
         copiedBoard[65] = board[65] & 12; // clear black castling
 
         if (targetIndex === 2) {
           // black castling queen side
-          copiedBoard[3] === 4;
-          copiedBoard[0] === 0;
+          copiedBoard[3] = 4;
+          copiedBoard[0] = 0;
           break;
         }
         
         if (targetIndex === 6) {
           // black castling king side
-          copiedBoard[5] === 4;
-          copiedBoard[7] === 0;
+          copiedBoard[5] = 4;
+          copiedBoard[7] = 0;
           break;
         }
       }
@@ -62,15 +61,15 @@ export const getMovedBoard = (move, board) => {
 
         if (targetIndex === 58) {
           // white castling queen side
-          copiedBoard[59] === 12;
-          copiedBoard[56] === 0;
+          copiedBoard[59] = 12;
+          copiedBoard[56] = 0;
           break;
         }
         
         if (targetIndex === 62) {
           // black castling king side
-          copiedBoard[61] === 12;
-          copiedBoard[63] === 0;
+          copiedBoard[61] = 12;
+          copiedBoard[63] = 0;
           break;
         }
       }

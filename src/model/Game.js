@@ -1,6 +1,8 @@
 import { getInitialTable } from "./table";
 import uuid from 'uuid-random';
 import { addMovesToTable, tableToAptString } from "../engine/engine";
+import { fen2intArray } from "../engine_new/transformers/fen2intArray";
+import { generateLegalMoves } from "../engine_new/moveGenerators/generateLegalMoves";
 export class GameModel {
   constructor({
     wPlayer = null,
@@ -9,7 +11,9 @@ export class GameModel {
     bName = 'Computer',
     computerPlaysWhite = false,
     computerPlaysBlack = false,
-    table,
+    fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
+    bitBoard,
+    board,
     wNext = true,
   }) {
     this.wPlayer = wPlayer;
@@ -38,12 +42,7 @@ export class GameModel {
     this.returnedMoves = []
 
     this.id = uuid();
-    //   this.wName = wName,
-    //   this.bName = bName,
 
-
-    //   this.aiToMove = false //unused
-    // this.toBeChecked = true //unused
     this.gameIsOn = true
     this.whiteWon = false
     this.blackWon = false
@@ -55,72 +54,18 @@ export class GameModel {
     this.whiteCanForceDraw = false
     this.blackCanForceDraw = false
 
-
-    // this.learner = false
-    // this.learnerIsBusy = false
-
-
-
     this.wNext = wNext;
-      // this.aiOn = false;
-      // this.chat = [];
-      this.moves = [];
-      // this.pollNum = 1;
+    this.moves = [];
 
-    // this.created = Date.now();
     this.moved = null
 
-    if (table) {
-      this.isCustom = true;
-      addMovesToTable(table, wNext);
-    }
-    this.table = table || getInitialTable();
 
-    this.allPastTables = [tableToAptString(this.table)]
+    this.bitBoard = bitBoard || fen2intArray(fen);
 
+    this.board = Array.from(board || this.bitBoard);
 
-    // this.table = new Array(8) //create 8x8 array
-    // for (var i = 0; i < 8; i++) {
-    //   this.table[i] = new Array(8)
-    // }
+    this.nextMoves = Array.from(generateLegalMoves(this.bitBoard));
 
-    // for (var j = 2; j < 6; j++) { //make the blanks blank
-    //   for (i = 0; i < 8; i++) {
-    //     this.table[i][j] = [0, 0, 0, false, false]
-    //   }
-    // }
-
-    // for (var i = 0; i < 8; i++) { //row of white pawns
-
-    //   this.table[i][1] = [2, 1, 0, false, false] //,pawnCanMove]
-    // }
-    // for (var i = 0; i < 8; i++) { //row of black pawns
-    //   this.table[i][6] = [1, 1, 0, false, false] //,pawnCanMove]
-    // }
-
-    // this.table[0][0] = [2, 4, 0, true, false] //,rookCanMove]				//rooks		//0 stands for times it moved
-    // this.table[7][0] = [2, 4, 0, true, false] //,rookCanMove]
-    // this.table[0][7] = [1, 4, 0, true, false] //,rookCanMove]
-    // this.table[7][7] = [1, 4, 0, true, false] //,rookCanMove]
-
-    // this.table[1][0] = [2, 3, 0, true, false] //,horseCanMove]					//knights
-    // this.table[6][0] = [2, 3, 0, true, false] //,horseCanMove]
-    // this.table[1][7] = [1, 3, 0, true, false] //,horseCanMove]
-    // this.table[6][7] = [1, 3, 0, true, false] //,horseCanMove]
-
-    // this.table[2][0] = [2, 2, 0, true, false] //,bishopCanMove]				//bishops
-    // this.table[5][0] = [2, 2, 0, true, false] //,bishopCanMove]
-    // this.table[2][7] = [1, 2, 0, true, false] //,bishopCanMove]
-    // this.table[5][7] = [1, 2, 0, true, false] //,bishopCanMove]
-
-    // this.table[3][0] = [2, 5, 0, true, false] //,queenCanMove]				//w queen
-    // this.table[4][0] = [2, 9, 0, true, false] //,kingCanMove]				//w king
-
-    // this.table[3][7] = [1, 5, 0, true, false] //,queenCanMove]				//b q
-    // this.table[4][7] = [1, 9, 0, true, false] //,kingCanMove]				//b k
-
-    // this.table = addMovesToTable(this.table, true)
-    //protectPieces(this.table,true)
-    //protectPieces(this.table,false)
+    this.allPastFens = [fen];
   }
 }

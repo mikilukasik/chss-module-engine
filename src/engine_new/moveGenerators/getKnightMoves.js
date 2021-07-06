@@ -1,7 +1,7 @@
 export const getKnightMoves = (position, board, color) => {
   const targets = [];
 
-  const rank = position >> 3;
+  const rank = position >>> 3;
   const file = position & 7;
 
   const canGo2Left = file > 1;
@@ -16,48 +16,48 @@ export const getKnightMoves = (position, board, color) => {
   if (canGo2Up) {
     if (canGoLeft) {
       const target = position - 17;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
 
     if (canGoRight) {
       const target = position - 15;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
   }
 
   if (canGo2Down) {
     if (canGoLeft) {
       const target = position + 15;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
 
     if (canGoRight) {
       const target = position + 17;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
   }
   
   if (canGo2Left) {
     if (canGoUp) {
       const target = position - 10;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
 
     if (canGoDown) {
       const target = position + 6;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
   }
 
   if (canGo2Right) {
     if (canGoUp) {
       const target = position - 6;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
 
     if (canGoDown) {
       const target = position + 10;
-      if (board[target] === 0 || (board[target] >> 3) !== color) targets[targets.length] = target;
+      if (board[target] === 0 || (board[target] >>> 3) !== color) targets[targets.length] = target;
     }
   }
 

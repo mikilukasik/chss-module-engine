@@ -1,7 +1,7 @@
 export const getRookMoves = (position, board, color) => {
   const targets = [];
 
-  const maxMovesUp = position >> 3;   // equals to rank
+  const maxMovesUp = position >>> 3;   // equals to rank
   const maxMovesLeft = position & 7;  // equals to file
   const maxMovesDown = 7 - maxMovesUp;
   const maxMovesRight = 7 - maxMovesLeft;
@@ -13,7 +13,7 @@ export const getRookMoves = (position, board, color) => {
       continue;
     }
 
-    if ((board[cellIndex] >> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
+    if ((board[cellIndex] >>> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
     break;
   }
 
@@ -24,7 +24,7 @@ export const getRookMoves = (position, board, color) => {
       continue;
     }
 
-    if ((board[cellIndex] >> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
+    if ((board[cellIndex] >>> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
     break;
   }
 
@@ -35,7 +35,7 @@ export const getRookMoves = (position, board, color) => {
       continue;
     }
 
-    if ((board[cellIndex] >> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
+    if ((board[cellIndex] >>> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
     break;
   }
 
@@ -46,7 +46,7 @@ export const getRookMoves = (position, board, color) => {
       continue;
     }
 
-    if ((board[cellIndex] >> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
+    if ((board[cellIndex] >>> 3) !== color) targets[targets.length] = cellIndex; // opponent's piece
     break;
   }
 
