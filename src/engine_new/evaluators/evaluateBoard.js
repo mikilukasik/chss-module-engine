@@ -10,10 +10,12 @@ export const getPieceBalance = (board) => {
     pieceBalance += pieceValues[board[index]];
   }
 
-  return pieceBalance;
+  return pieceBalance << 8;
 }
 
 export const evaluateBoard = (board) => {
+  // return getPieceBalance(board);
+
   let pieceBalance = 0;
   const attackMap = [];
   const defendMap = [];
@@ -84,7 +86,7 @@ export const evaluateBoard = (board) => {
         hitScore = Math.max(hitScore, thisCellValue);
       }//hitScore += thisCellValue; // add cellvalue if worth to hit
       continue cellLoop;
-    };
+    }
     // there are more attackers
 
     weakestAttacker = attackMap[index].pop(); // second weakest
@@ -114,7 +116,7 @@ export const evaluateBoard = (board) => {
           hitScore = Math.max(hitScore, thisCellValue);
         }
         continue cellLoop;
-      };
+      }
       // there are more protectors
 
       weakestProtector = defendMap[index].pop();
@@ -143,12 +145,12 @@ export const evaluateBoard = (board) => {
           hitScore = Math.max(hitScore, thisCellValue);
         }
         continue cellLoop;
-      };
+      }
       // there are more attackers
 
       weakestAttacker = attackMap[index].pop();
       hasMoreProtectors = defendMap[index].length !== 0;
     }
   }
-  return board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore;
+  return (board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore) << 8;
 };

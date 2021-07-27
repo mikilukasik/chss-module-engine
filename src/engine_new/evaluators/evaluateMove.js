@@ -1,13 +1,9 @@
 import { isCaptured } from "../../../../chss-app-game-client/chss-module-engine/src/engine_new/utils/isCaptured";
-import { evalOnNN } from "../../engine/ai";
 import { generatePseudoMovesThrowMethod } from "../moveGenerators/generatePseudoMovesThrowMethod";
-import { generatePseudoMovesThrowMethodNoOrder } from "../moveGenerators/generatePseudoMovesThrowMethodNoOrder";
+import { generatePseudoMovesUpdatePositionScore } from "../moveGenerators/generatePseudoMovesUpdatePositionScore";
 import { board2fen } from "../transformers/board2fen";
-import { move2moveString } from "../transformers/move2moveString";
 import { getMovedBoard } from "../utils/getMovedBoard";
 import { evaluateBoard } from "./evaluateBoard";
-
-let logTimeout;
 
 export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: _depth, desiredDepth, moveTree, origMove, repeatedPastFens, dontLoop }) => {
   const depth = _depth || desiredDepth - 2;
@@ -15,9 +11,10 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
   const boardsPerDepth = [[movedBoard]];
   const movesPerDepth = [[move]];
   const moveIndexPerDepth = new Int8Array(depth + 1);
-  const scorePerDepth = new Int8Array(Array.from({ length: depth + 1 }).map(() => -128));
-  const currentBests = new Int8Array(_currentBests || Array.from({ length: depth + 1 }).map(() => -128));
+  const scorePerDepth = new Int16Array(Array.from({ length: depth + 1 }).map(() => -32768));
+  const currentBests = new Int16Array(_currentBests || Array.from({ length: depth + 1 }).map(() => -32768));
   const moveTreePerDepth = [];
+  const posVals = [];
 
   let currentDepth = 0;
 
@@ -28,38 +25,82 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
 
       if (currentDepth === 0) break mainloop;
       const cdm1 = currentDepth - 1;
-      
-      if (
-        (scorePerDepth[cdm1] === -128) ||
-        (boardsPerDepth[cdm1][0][64] === 1 && scorePerDepth[cdm1] > scorePerDepth[currentDepth]) ||
-        (boardsPerDepth[cdm1][0][64] === 0 && scorePerDepth[cdm1] < scorePerDepth[currentDepth])
-      ) {
-        scorePerDepth[cdm1] = scorePerDepth[currentDepth];
+      if (scorePerDepth[cdm1] === -32768) {
+        scorePerDepth[cdm1] = scorePerDepth[currentDepth] /* + validMoveCounts[currentDepth] * (boardsPerDepth[cdm1][0][64] ? 1 : -1) */;
         moveTreePerDepth[cdm1] = moveTreePerDepth[currentDepth];
-
+      
         if (
-          (currentBests[cdm1] === -128) ||
-          (boardsPerDepth[cdm1][0][64] === 1 && currentBests[cdm1] > currentBests[currentDepth]) ||
-          (boardsPerDepth[cdm1][0][64] === 0 && currentBests[cdm1] < currentBests[currentDepth])
+          (currentBests[cdm1] === -32768) ||
+          (boardsPerDepth[cdm1][0][64] === 1 && currentBests[cdm1] > currentBests[currentDepth] /* + validMoveCounts[currentDepth] */) ||
+          (boardsPerDepth[cdm1][0][64] === 0 && currentBests[cdm1] < currentBests[currentDepth] /* - validMoveCounts[currentDepth] */)
         ) {
           currentBests[cdm1] = scorePerDepth[cdm1];
-
+      
           if (
-            currentBests[currentDepth - 2] !== -128 &&
+            currentBests[currentDepth - 2] !== -32768 &&
             ((boardsPerDepth[cdm1][0][64] === 1 && currentBests[currentDepth - 2] >= currentBests[cdm1]) ||
             (boardsPerDepth[cdm1][0][64] === 0 && currentBests[currentDepth - 2] <= currentBests[cdm1]))
            ) {
-            // prune
             moveIndexPerDepth[cdm1] = movesPerDepth[cdm1].length;
-            currentBests[currentDepth] = -128;
+            currentBests[currentDepth] = -32768;
             currentDepth = cdm1;
             continue mainloop;
           }
         }
       }
+      
+      if (boardsPerDepth[cdm1][0][64] === 1) {
+        if (scorePerDepth[cdm1] > scorePerDepth[currentDepth] /* + validMoveCounts[currentDepth] */) {
+          scorePerDepth[cdm1] = scorePerDepth[currentDepth] /* + validMoveCounts[currentDepth] */;
+          moveTreePerDepth[cdm1] = moveTreePerDepth[currentDepth];
+        
+          if (
+            currentBests[cdm1] === -32768 ||
+            currentBests[cdm1] > currentBests[currentDepth] /* + validMoveCounts[currentDepth] */
+          ) {
+            currentBests[cdm1] = scorePerDepth[cdm1];
+        
+            if (
+              currentBests[currentDepth - 2] !== -32768 &&
+              currentBests[currentDepth - 2] >= currentBests[cdm1]
+             ) {
+              moveIndexPerDepth[cdm1] = movesPerDepth[cdm1].length;
+              currentBests[currentDepth] = -32768;
+              currentDepth = cdm1;
+              continue mainloop;
+            }
+          }
+        }
+      }
+      
+      if (boardsPerDepth[cdm1][0][64] === 0) {
+        if (scorePerDepth[cdm1] < scorePerDepth[currentDepth] /* - validMoveCounts[currentDepth] */) {
+          scorePerDepth[cdm1] = scorePerDepth[currentDepth] /* - validMoveCounts[currentDepth] */;
+          moveTreePerDepth[cdm1] = moveTreePerDepth[currentDepth];
+        
+          if (
+            currentBests[cdm1] === -32768 ||
+            currentBests[cdm1] < currentBests[currentDepth] /* - validMoveCounts[currentDepth] */
+          ) {
+            currentBests[cdm1] = scorePerDepth[cdm1];
+        
+            if (
+              currentBests[currentDepth - 2] !== -32768 &&
+              currentBests[currentDepth - 2] <= currentBests[cdm1]
+             ) {
+             
+              moveIndexPerDepth[cdm1] = movesPerDepth[cdm1].length;
+              currentBests[currentDepth] = -32768;
+              currentDepth = cdm1;
+              continue mainloop;
+            }
+          }
+        }
+      }
+
 
       moveIndexPerDepth[cdm1] += 1;
-      currentBests[currentDepth] = -128;
+      currentBests[currentDepth] = -32768;
       currentDepth = cdm1;
       continue mainloop;
     }
@@ -71,11 +112,13 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
 
       try {
         if (cdp1 === depth) {
-          movesPerDepth[cdp1] = generatePseudoMovesThrowMethodNoOrder(boardToProcess);
+          const posVal = [0];
+          movesPerDepth[cdp1] = generatePseudoMovesUpdatePositionScore(boardToProcess, posVal);
+          posVals[moveIndexPerDepth[currentDepth]] = posVal[0];
         } else {
           movesPerDepth[cdp1] = generatePseudoMovesThrowMethod(boardToProcess);
+          posVals.length = 0
         }
-
 
         if (moveTree[currentDepth]) {
           const previousCutMoveIndex = movesPerDepth[cdp1].indexOf(moveTree[currentDepth]);
@@ -90,14 +133,13 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
         
         moveIndexPerDepth[currentDepth] += 1;
 
-        if (currentDepth > 0 && moveIndexPerDepth[currentDepth] === movesPerDepth[currentDepth].length && scorePerDepth[currentDepth] === -128) {
+        if (currentDepth > 0 && moveIndexPerDepth[currentDepth] === movesPerDepth[currentDepth].length && scorePerDepth[currentDepth] === -32768) {
             const stalledBoard = boardsPerDepth[currentDepth - 1][moveIndexPerDepth[currentDepth - 1]];
 
-          
             if (isCaptured(stalledBoard, stalledBoard.indexOf(6 + ((stalledBoard[64]) << 3)), stalledBoard[64])) {
               // checkmate
 
-              scorePerDepth[currentDepth] = stalledBoard[64] ? currentDepth - 110 : 110 - currentDepth;
+              scorePerDepth[currentDepth] = stalledBoard[64] ? currentDepth - 31000 : 31000 - currentDepth;
             } else {
               //draw
             }
@@ -107,8 +149,7 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
       }
 
       moveIndexPerDepth[cdp1] = 0;
-      scorePerDepth[cdp1] = -128;
-      // currentBests[cdp1] = -128; // debug: this had no effect?
+      scorePerDepth[cdp1] = -32768;
       boardsPerDepth[cdp1] = movesPerDepth[cdp1].map(nextDepthMove => getMovedBoard(nextDepthMove, boardToProcess));
 
       currentDepth = cdp1;
@@ -118,10 +159,11 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
     if (currentDepth === depth) {
       // desiredDepth reached, evaluate board
       try {
-        const score = evaluateBoard(boardsPerDepth[currentDepth][moveIndexPerDepth[currentDepth]]); 
+        const score = evaluateBoard(boardsPerDepth[currentDepth][moveIndexPerDepth[currentDepth]]) + posVals[moveIndexPerDepth[currentDepth - 1]]; 
+
         if (
           // no score for this level (1st board) or score is better than what we already have
-          (scorePerDepth[currentDepth] === -128) ||
+          (scorePerDepth[currentDepth] === -32768) ||
           (boardsPerDepth[currentDepth][0][64] === 1 && scorePerDepth[currentDepth] > score) ||
           (boardsPerDepth[currentDepth][0][64] === 0 && scorePerDepth[currentDepth] < score)
         ) {
@@ -133,7 +175,8 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
           
           if (
             // we have currentBest for depth - 1 and that's better than what we got here
-            currentBests[cdm1] !== -128 &&
+            currentBests[cdm1] !== -32768 &&
+
             ((boardsPerDepth[currentDepth][0][64] === 1 && score <= currentBests[cdm1]) ||
             (boardsPerDepth[currentDepth][0][64] === 0 && score >= currentBests[cdm1]))
           ) {
@@ -147,7 +190,7 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
         if (e) throw e;
         moveIndexPerDepth[currentDepth] += 1;
 
-        if (moveIndexPerDepth[currentDepth] === movesPerDepth[currentDepth].length && scorePerDepth[currentDepth] === -128) {
+        if (moveIndexPerDepth[currentDepth] === movesPerDepth[currentDepth].length && scorePerDepth[currentDepth] === -32768) {
           const stalledBoard = boardsPerDepth[currentDepth - 1][moveIndexPerDepth[currentDepth - 1]];
 
           if (isCaptured(stalledBoard, stalledBoard.indexOf(6 + ((stalledBoard[64]) << 3)), stalledBoard[64])) {
@@ -168,16 +211,14 @@ export const evaluateMove = ({ board, move, currentBests: _currentBests, depth: 
     }
   }
 
-  const aiVal = evalOnNN(movedBoard)[0] - 0.5;
-
   let loopScore = 0;
   if (repeatedPastFens.includes(board2fen(movedBoard))) {
     // move would loop
-    loopScore = -10;
+    loopScore = -2000;
 
     if (!dontLoop) loopScore *= -1;
     if (movedBoard[64] === 0) loopScore *= -1;
   }
 
-  return { score: scorePerDepth[0] + loopScore + aiVal, aiVal, currentBests, moveTree: moveTreePerDepth[0] };
+  return { score: scorePerDepth[0] + loopScore, currentBests, moveTree: moveTreePerDepth[0] };
 };
