@@ -1,8 +1,8 @@
-import { getInitialTable } from "./table";
+import { getInitialTable } from './table';
 import uuid from 'uuid-random';
-import { addMovesToTable, tableToAptString } from "../engine/engine";
-import { fen2intArray } from "../engine_new/transformers/fen2intArray";
-import { generateLegalMoves } from "../engine_new/moveGenerators/generateLegalMoves";
+import { addMovesToTable, tableToAptString } from '../engine/engine';
+import { fen2intArray } from '../engine_new/transformers/fen2intArray';
+import { generateLegalMoves } from '../engine_new/moveGenerators/generateLegalMoves';
 export class GameModel {
   constructor({
     wPlayer = null,
@@ -15,18 +15,24 @@ export class GameModel {
     bitBoard,
     board,
     wNext = true,
-  }) {
+    tournamentInfo,
+  } = {}) {
     this.wPlayer = wPlayer;
     this.bPlayer = bPlayer;
     this.wName = wName;
     this.bName = bName;
     this.computerPlaysWhite = computerPlaysWhite;
     this.computerPlaysBlack = computerPlaysBlack;
-
+    this.tournamentInfo = tournamentInfo;
     this.status = 'active';
 
     this.moveCount = 0;
-    
+
+    this.thinkingTimes = {
+      black: [],
+      white: [],
+    };
+
     // fen compatible vars below
     this.fullMoveNumber = 1;
     this.halfMoveClock = 0;
@@ -35,30 +41,30 @@ export class GameModel {
 
     this.completed = false;
 
-
     // from old engine
-    this.pendingMoveCount = 0
-    this.desiredDepth = 0	//will set after creating, at each move step
-    this.returnedMoves = []
+    this.pendingMoveCount = 0;
+    this.desiredDepth = 0; //will set after creating, at each move step
+    this.returnedMoves = [];
 
     this.id = uuid();
+    this._id = this.id;
+    this.createdAt = new Date().toISOString();
 
-    this.gameIsOn = true
-    this.whiteWon = false
-    this.blackWon = false
-    this.isDraw = false
+    this.gameIsOn = true;
+    this.whiteWon = false;
+    this.blackWon = false;
+    this.isDraw = false;
 
-    this.askWhiteDraw = false
-    this.askBlackDraw = false
+    this.askWhiteDraw = false;
+    this.askBlackDraw = false;
 
-    this.whiteCanForceDraw = false
-    this.blackCanForceDraw = false
+    this.whiteCanForceDraw = false;
+    this.blackCanForceDraw = false;
 
     this.wNext = wNext;
     this.moves = [];
 
-    this.moved = null
-
+    this.moved = null;
 
     this.bitBoard = bitBoard || fen2intArray(fen);
 

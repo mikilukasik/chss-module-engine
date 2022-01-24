@@ -1,69 +1,71 @@
-import { getMovedBoard } from "../engine_new/utils/getMovedBoard";
-import { generateLegalMoves } from "../engine_new/moveGenerators/generateLegalMoves";
-import { isCaptured } from "../engine_new/utils/isCaptured";
-import { board2fen } from "../engine_new/transformers/board2fen";
-import { evaluateBoard } from "../engine_new/evaluators/evaluateBoard";
+import { getMovedBoard } from '../engine_new/utils/getMovedBoard';
+import { generateLegalMoves } from '../engine_new/moveGenerators/generateLegalMoves';
+import { isCaptured } from '../engine_new/utils/isCaptured';
+import { board2fen } from '../engine_new/transformers/board2fen';
+import { evaluateBoard } from '../engine_new/evaluators/evaluateBoard';
 
-const moveToMoveCoords = (move) => ([
-  (move >> 10) & 7,
-  7 - (move >>> 13),
-  move & 7,
-  7 - ((move >> 3) & 7),
-]);
+const moveToMoveCoords = (move) => [(move >> 10) & 7, 7 - (move >>> 13), move & 7, 7 - ((move >> 3) & 7)];
 
-export const moveString2move = (moveStr) => (
+export const moveString2move = (moveStr) =>
   ((8 - Number(moveStr[1])) << 13) +
   ((moveStr.charCodeAt(0) - 97) << 10) +
   ((8 - Number(moveStr[3])) << 3) +
-  (moveStr.charCodeAt(2) - 97)
-);
+  (moveStr.charCodeAt(2) - 97);
 
-export const moveInBoard = (move, dbTable) => {
-  dbTable.bitBoard = getMovedBoard(move, dbTable.board);
-  dbTable.board = Array.from(dbTable.bitBoard);
-  dbTable.wNext = !dbTable.wNext;
-  if (dbTable.wNext) dbTable.fullMoveNumber += 1;
+export const moveInBoard = (move, game) => {
+  game.bitBoard = getMovedBoard(move, game.board);
+  game.board = Array.from(game.bitBoard);
+  game.wNext = !game.wNext;
+  if (game.wNext) game.fullMoveNumber += 1;
 
-  dbTable.pollNum += 1;
-  dbTable.moveCount += 1;
-  dbTable.nextMoves = Array.from(generateLegalMoves(dbTable.bitBoard));
+  const now = Date.now();
+  if (game.lastMovedAt) {
+    const thinkingTime = now - game.lastMovedAt;
+    game.thinkingTimes[game.wNext ? 'black' : 'white'].push(thinkingTime);
+  }
 
-  if (dbTable.nextMoves.length === 0) {
-    dbTable.completed = true;
+  game.lastMovedAt = now;
+
+  game.pollNum += 1;
+  game.moveCount += 1;
+  game.nextMoves = Array.from(generateLegalMoves(game.bitBoard));
+
+  if (game.nextMoves.length === 0) {
+    game.completed = true;
 
     // TODO: the below might be wrong wNext
-    if (isCaptured(dbTable.bitBoard, dbTable.bitBoard.indexOf(6 + (dbTable.bitBoard[64] << 3)), dbTable.bitBoard[64])) {
-      dbTable[dbTable.wNext ? 'blackWon' : 'whiteWon'] = true;
+    if (isCaptured(game.bitBoard, game.bitBoard.indexOf(6 + (game.bitBoard[64] << 3)), game.bitBoard[64])) {
+      game[game.wNext ? 'blackWon' : 'whiteWon'] = true;
     } else {
-      dbTable.isDraw = true;
+      game.isDraw = true;
     }
   }
 
-  dbTable.allPastFens.push(board2fen(dbTable.bitBoard))
+  game.allPastFens.push(board2fen(game.bitBoard));
 
-  const pastFensOccurranceCount = dbTable.allPastFens.reduce((p, c) => {
+  const pastFensOccurranceCount = game.allPastFens.reduce((p, c) => {
     p[c] = (p[c] || 0) + 1;
     return p;
   }, {});
-  dbTable.repeatedPastFens = Object.keys(pastFensOccurranceCount).filter(key => pastFensOccurranceCount[key] > 1);
+  game.repeatedPastFens = Object.keys(pastFensOccurranceCount).filter((key) => pastFensOccurranceCount[key] > 1);
 
-  dbTable.origScore = evaluateBoard(dbTable.bitBoard);
-  dbTable.dontLoop = dbTable.bitBoard[64] ? dbTable.origScore > -0.5 : dbTable.origScore < -0.5;
-  return dbTable;
+  game.origScore = evaluateBoard(game.bitBoard);
+  game.dontLoop = game.bitBoard[64] ? game.origScore > -0.5 : game.origScore < -0.5;
+  return game;
 };
-
 
 // ^^^^^^ for new engine
 
-
 const PIECE_VALUES = [0, 1, 3, 3, 5, 9, 0, 0, 0, 64]; // empty, pawn, bishop, knight, rook, queen, null, null, null, king
-const ATTACK_VALUES = [0, 0.5, 1.5, 1.5, 2.5, 4.5, 0, 0, 0, 32]
+const ATTACK_VALUES = [0, 0.5, 1.5, 1.5, 2.5, 4.5, 0, 0, 0, 32];
 
+const getPreferCentreMultiplier = (x, y) => Math.pow(7 - Math.abs(3.5 - x) - Math.abs(3.5 - y), 4) / 200;
+const PREFER_CENTER_TABLE = Array.from({ length: 8 }).map((row, x) =>
+  Array.from({ length: 8 }).map((cell, y) => getPreferCentreMultiplier(x, y)),
+);
 
-const getPreferCentreMultiplier = (x, y)=>(Math.pow(7 - Math.abs (3.5 - x) - Math.abs (3.5 - y), 4) / 200);
-const PREFER_CENTER_TABLE = Array.from({ length: 8 }).map((row, x) => Array.from({ length:8 }).map((cell, y) => getPreferCentreMultiplier(x, y)));
-
-export const getNormalizedMoveTree = ({ moveTree }) => moveTree.map(m => Array.isArray(m) ? coordsToMoveString(...m) : m.toString().padStart(5)).join(' ');
+export const getNormalizedMoveTree = ({ moveTree }) =>
+  moveTree.map((m) => (Array.isArray(m) ? coordsToMoveString(...m) : m.toString().padStart(5))).join(' ');
 
 export const rotateTable = (table) => {
   const result = [];
@@ -74,15 +76,17 @@ export const rotateTable = (table) => {
     }
   }
   return result;
-}
+};
 
 const getCastlingAvailability = ({ table }) => {
   let caStr = '';
-  if (table[4][0][3]) { // white king not moved
+  if (table[4][0][3]) {
+    // white king not moved
     if (table[7][0][3]) caStr = `${caStr}K`;
     if (table[0][0][3]) caStr = `${caStr}Q`;
   }
-  if (table[4][7][3]) { // black king not moved
+  if (table[4][7][3]) {
+    // black king not moved
     if (table[7][7][3]) caStr = `${caStr}k`;
     if (table[0][7][3]) caStr = `${caStr}q`;
   }
@@ -93,9 +97,8 @@ export const toFen = (game) => {
   let fen = '';
   for (const row of rotateTable(game.table)) {
     let emptyCellCount = 0;
-    
-    cellLoop:
-    for (const cell of row) {
+
+    cellLoop: for (const cell of row) {
       if (emptyCellCount) {
         if (cell[0] === 0) {
           emptyCellCount += 1;
@@ -121,103 +124,85 @@ export const toFen = (game) => {
 
   fen = fen.replace(/\/$/, '');
 
-  fen = `${
-    fen
-  } ${
-    game.wNext ? 'w' : 'b'
-  } ${
-    getCastlingAvailability(game)
-  } ${
-    game.enPassantTarget
-  } ${
+  fen = `${fen} ${game.wNext ? 'w' : 'b'} ${getCastlingAvailability(game)} ${game.enPassantTarget} ${
     game.halfMoveClock
-  } ${
-    game.fullMoveNumber
-  }`;
+  } ${game.fullMoveNumber}`;
 
   return fen;
 };
 
-export const moveStringToMoveCoords = (moveString) => ([
-  moveString.charCodeAt(0)-97,
-  moveString[1] -1,
-  moveString.charCodeAt(2)-97,
-  moveString[3] -1,
-]);
+export const moveStringToMoveCoords = (moveString) => [
+  moveString.charCodeAt(0) - 97,
+  moveString[1] - 1,
+  moveString.charCodeAt(2) - 97,
+  moveString[3] - 1,
+];
 
 // needed for service
 var MoveToSend = function (moveCoord, index, dbTableWithMoveTask, splitMoveId, firstLevelMoveCount) {
+  var moveTask = dbTableWithMoveTask.moveTask;
 
-  var moveTask = dbTableWithMoveTask.moveTask
+  this.shouldIDraw = moveTask.shouldIDraw;
 
-  this.shouldIDraw = moveTask.shouldIDraw
+  this.firstLevelMoveCount = firstLevelMoveCount;
 
-  this.firstLevelMoveCount = firstLevelMoveCount
+  this.mod = moveTask.mod;
 
-  this.mod = moveTask.mod
+  this.currentBests = moveTask.currentBests;
 
-  this.currentBests = moveTask.currentBests
+  this.moveIndex = index;
 
-  this.moveIndex = index
+  this.moveCoords = moveCoord; //one move only
 
-  this.moveCoords = moveCoord //one move only
+  this.sharedData = moveTask.sharedData;
 
-  this.sharedData = moveTask.sharedData
+  this.sharedData.origTable = dbTableWithMoveTask.table;
 
-  this.sharedData.origTable = dbTableWithMoveTask.table
+  this.sharedData.gameNum = dbTableWithMoveTask._id;
 
-  this.sharedData.gameNum = dbTableWithMoveTask._id
+  this.sharedData.desiredDepth = moveTask.sharedData.desiredDepth;
 
-  this.sharedData.desiredDepth = moveTask.sharedData.desiredDepth
+  this.sharedData.splitMoveID = splitMoveId;
 
-  this.sharedData.splitMoveID = splitMoveId
+  this.timer = {};
 
-  this.timer = {}
-
-  this.history = []
-
-}
+  this.history = [];
+};
 
 export const SplitMove = function (dbTableWithMoveTask) {
-
   //**console.log(JSON.stringify(dbTableWithMoveTask.moveTask))
 
-  this.shouldIDraw = dbTableWithMoveTask.moveTask.shouldIDraw
+  this.shouldIDraw = dbTableWithMoveTask.moveTask.shouldIDraw;
 
-  this.started = new Date()
+  this.started = new Date();
 
-  this.splitMoveIndex = undefined
+  this.splitMoveIndex = undefined;
 
-  this.splitMoveID = Math.random() * Math.random()
+  this.splitMoveID = Math.random() * Math.random();
 
-  var movesToSend = []
+  var movesToSend = [];
 
   const firstLevelMoveCount = dbTableWithMoveTask.moveTask.moveCoords.length;
   dbTableWithMoveTask.moveTask.moveCoords.forEach((moveCoord, index) => {
+    movesToSend.push(new MoveToSend(moveCoord, index, dbTableWithMoveTask, this.splitMoveID, firstLevelMoveCount));
+  });
 
-    movesToSend.push(new MoveToSend(moveCoord, index, dbTableWithMoveTask, this.splitMoveID, firstLevelMoveCount))
+  this.movesToSend = movesToSend; //this will get empty as we send the moves out for processing
 
-  })
+  this.moves = movesToSend.slice(); //this should stay full
 
-  this.movesToSend = movesToSend //this will get empty as we send the moves out for processing
+  this.thinkers = []; //this will get filled with the clients working on this splitmove
 
-  this.moves = movesToSend.slice() //this should stay full
+  this.gameNum = dbTableWithMoveTask._id;
 
-  this.thinkers = [] //this will get filled with the clients working on this splitmove
+  this.origTable = dbTableWithMoveTask.table;
 
-  this.gameNum = dbTableWithMoveTask._id
+  this.origMoveTask = dbTableWithMoveTask.moveTask;
 
-  this.origTable = dbTableWithMoveTask.table
-
-  this.origMoveTask = dbTableWithMoveTask.moveTask
-
-  this.pendingMoveCount = dbTableWithMoveTask.moveTask.moveCoords.length
-
+  this.pendingMoveCount = dbTableWithMoveTask.moveTask.moveCoords.length;
 
   this.movesToSend.forEach(function (splitMove) {
-
     splitMove.progress = {
-
       moveCoords: splitMove.moveCoords,
       moveIndex: splitMove.moveIndex,
 
@@ -225,12 +210,9 @@ export const SplitMove = function (dbTableWithMoveTask) {
       result: {},
 
       expected: undefined,
-
-    }
-
-  })
-
-}
+    };
+  });
+};
 
 export const MoveTaskN = function (dbTable, mod) {
   this.id = Math.random();
@@ -239,15 +221,15 @@ export const MoveTaskN = function (dbTable, mod) {
     p[c] = (p[c] || 0) + 1;
     return p;
   }, {});
-  this.repeatedPastTables = Object.keys(pastTablesOccurranceCount).filter(key => pastTablesOccurranceCount[key] > 1);
+  this.repeatedPastTables = Object.keys(pastTablesOccurranceCount).filter((key) => pastTablesOccurranceCount[key] > 1);
 
-  var shouldIDraw = evalFuncs.shouldIDraw(dbTable)
-  this.shouldIDraw = shouldIDraw
+  var shouldIDraw = evalFuncs.shouldIDraw(dbTable);
+  this.shouldIDraw = shouldIDraw;
 
   const currentBests = [];
   this.currentBests = currentBests;
 
-  if (mod) this.mod = mod
+  if (mod) this.mod = mod;
 
   this.sharedData = {
     currentBests,
@@ -258,18 +240,18 @@ export const MoveTaskN = function (dbTable, mod) {
     desiredDepth: dbTable.desiredDepth,
     oppKingPos: whereIsTheKing(dbTable.table, !dbTable.wNext),
     origData: getTableData(dbTable.table, dbTable.wNext),
-  }
+  };
 
   this.moveCoords = getAllMoves(dbTable.table, dbTable.wNext, false, 0, true).sort((moveA, moveB) => {
     return dbTable.table[moveB[2]][moveB[3]][1] - dbTable.table[moveA[2]][moveA[3]][1];
   });
 
-  var dontLoop = false
+  var dontLoop = false;
   if (this.sharedData.origData[0] > 1) {
-    dontLoop = true
+    dontLoop = true;
   }
 
-  this.sharedData.dontLoop = dontLoop
+  this.sharedData.dontLoop = dontLoop;
 };
 
 export function addMovesToTable(originalTable, whiteNext, dontClearInvalid, returnMoveCoords) {
@@ -278,7 +260,17 @@ export function addMovesToTable(originalTable, whiteNext, dontClearInvalid, retu
   for (var i = 0; i < 8; i += 1) {
     for (var j = 0; j < 8; j += 1) {
       if (originalTable[i][j][0] === myCol) {
-        originalTable[i][j][5] = canMove(i, j, whiteNext, originalTable, false, false, [0], dontClearInvalid, returnMoveCoords); //:  canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm, dontRemoveInvalid) { //, speedy) {
+        originalTable[i][j][5] = canMove(
+          i,
+          j,
+          whiteNext,
+          originalTable,
+          false,
+          false,
+          [0],
+          dontClearInvalid,
+          returnMoveCoords,
+        ); //:  canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm, dontRemoveInvalid) { //, speedy) {
         totalMoveCount += originalTable[i][j][5].length;
       } else {
         originalTable[i][j][5] = [];
@@ -293,7 +285,17 @@ function addMovesToTableFast(originalTable, whiteNext, dontClearInvalid, returnM
   for (var i = 0; i < 8; i += 1) {
     for (var j = 0; j < 8; j += 1) {
       if (originalTable[i][j][0] === myCol) {
-        originalTable[i][j][5] = canMoveNoKingHit(i, j, whiteNext, originalTable, false, false, [0], dontClearInvalid, returnMoveCoords); //:  canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm, dontRemoveInvalid) { //, speedy) {
+        originalTable[i][j][5] = canMoveNoKingHit(
+          i,
+          j,
+          whiteNext,
+          originalTable,
+          false,
+          false,
+          [0],
+          dontClearInvalid,
+          returnMoveCoords,
+        ); //:  canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm, dontRemoveInvalid) { //, speedy) {
         continue;
       }
       originalTable[i][j][5] = [];
@@ -303,10 +305,9 @@ function addMovesToTableFast(originalTable, whiteNext, dontClearInvalid, returnM
 
 export const evalFuncs = {
   getPieceValues: function (dbTable) {
-
     var result = {
       wVal: 0,
-      bVal: 0
+      bVal: 0,
     };
 
     var table = dbTable.table;
@@ -315,14 +316,12 @@ export const evalFuncs = {
       x.forEach(function (y) {
         switch (y[0]) {
           case 1:
-
-            result.bVal += PIECE_VALUES[ y[1] ];
+            result.bVal += PIECE_VALUES[y[1]];
 
             break;
 
           case 2:
-
-            result.wVal += PIECE_VALUES[ y[1] ];
+            result.wVal += PIECE_VALUES[y[1]];
 
             break;
 
@@ -333,7 +332,6 @@ export const evalFuncs = {
     });
 
     return result;
-
   },
 
   shouldIDraw: function (dbTable) {
@@ -349,7 +347,6 @@ export const evalFuncs = {
   },
 
   checkIfLooped: function (newTable, allPastTables) {
-
     var seenCount = 0;
     var thisState = tableToAptString(newTable);
 
@@ -358,7 +355,6 @@ export const evalFuncs = {
     });
 
     return seenCount;
-
   },
 };
 
@@ -384,29 +380,27 @@ function protectPieces(originalTable, whitePlayer) {
   var myCol = 1;
   if (whitePlayer) myCol = 2; //myCol is 2 when white
   var protectedSum = 0;
-  getAllMoves(originalTable, whitePlayer, true)
-    . //moves include to hit my own 
+  getAllMoves(originalTable, whitePlayer, true) //moves include to hit my own
     //true stands for letMeHitMyOwn
 
-    forEach(function (thisMoveCoords) {
+    .forEach(function (thisMoveCoords) {
       //we'll use the 2nd part of the moves [2][3]
-      if (originalTable[thisMoveCoords[2]][thisMoveCoords[3]][0] === myCol) { //if i have sg there
+      if (originalTable[thisMoveCoords[2]][thisMoveCoords[3]][0] === myCol) {
+        //if i have sg there
         originalTable[thisMoveCoords[2]][thisMoveCoords[3]][6] = true; //that must be protected
 
         if (originalTable[thisMoveCoords[0]][thisMoveCoords[1]][1] === 9) {
           protectedSum += (9 - originalTable[thisMoveCoords[2]][thisMoveCoords[3]][1]) * 2; //king protects double
-
         } else {
-
           protectedSum += 9 - originalTable[thisMoveCoords[2]][thisMoveCoords[3]][1];
         }
-
       }
     });
   return protectedSum;
 }
 
-function getAllMoves(tableToMoveOn, whiteNext, hitItsOwn, allHitSum, removeCaptured) { //shouldn't always check hitsum
+function getAllMoves(tableToMoveOn, whiteNext, hitItsOwn, allHitSum, removeCaptured) {
+  //shouldn't always check hitsum
   var origColor = whiteNext ? 2 : 1;
   var thisArray = [];
 
@@ -415,9 +409,12 @@ function getAllMoves(tableToMoveOn, whiteNext, hitItsOwn, allHitSum, removeCaptu
   }
   var hitSumPart = [0];
 
-  for (var lookI = 0; lookI < 8; lookI += 1) { //
-    for (var lookJ = 0; lookJ < 8; lookJ += 1) { //look through the table
-      if (tableToMoveOn[lookI][lookJ][0] === origColor) { //ha sajat babum
+  for (var lookI = 0; lookI < 8; lookI += 1) {
+    //
+    for (var lookJ = 0; lookJ < 8; lookJ += 1) {
+      //look through the table
+      if (tableToMoveOn[lookI][lookJ][0] === origColor) {
+        //ha sajat babum
         canMove(lookI, lookJ, whiteNext, tableToMoveOn, !removeCaptured, true, hitSumPart) //true,true for speedy(sakkba is lep),dontProtect
           .forEach(function (stepItem) {
             thisArray[thisArray.length] = [lookI, lookJ, stepItem[0], stepItem[1]];
@@ -427,14 +424,15 @@ function getAllMoves(tableToMoveOn, whiteNext, hitItsOwn, allHitSum, removeCaptu
   }
   return thisArray;
 }
-function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
+function getTableData(origTable, isWhite, oppKingPos) {
+  //, rtnSimpleValue) {
 
   var lSancVal = 0;
   var rSancVal = 0;
 
   var tableValue = 0;
 
-  var rtnMyHitSum = [0]; //this pointer will be passed to canmove 
+  var rtnMyHitSum = [0]; //this pointer will be passed to canmove
   var rtnHisHitSum = [0];
 
   var rtnMyBestHit = 0;
@@ -451,7 +449,8 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
   var origColor = 1;
   if (isWhite) origColor = 2;
 
-  if (isWhite && origTable[4][0][3]) { //we play with white and have not moved the king yet
+  if (isWhite && origTable[4][0][3]) {
+    //we play with white and have not moved the king yet
 
     var sancolhat = false;
 
@@ -463,19 +462,21 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
       if (origTable[2][0][0] === 0) lSancVal += 3;
       if (origTable[1][0][0] === 0) lSancVal += 1;
 
-      if (origTable[2][1][0] === 2) { //trying to keep my pieces  there to cover
+      if (origTable[2][1][0] === 2) {
+        //trying to keep my pieces  there to cover
         lSancVal += 1;
         if (origTable[2][1][1] === 1) lSancVal += 4;
       }
-      if (origTable[1][1][0] === 2) { //trying to keep my pieces  there to cover
+      if (origTable[1][1][0] === 2) {
+        //trying to keep my pieces  there to cover
         lSancVal += 1;
         if (origTable[1][1][1] === 1) lSancVal += 4;
       }
-      if (origTable[0][1][0] === 2) { //trying to keep my pieces  there to cover
+      if (origTable[0][1][0] === 2) {
+        //trying to keep my pieces  there to cover
         lSancVal += 1;
         if (origTable[0][1][1] === 1) lSancVal += 4;
       }
-
     }
 
     if (origTable[7][0][3]) {
@@ -485,19 +486,21 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
       if (origTable[6][0][0] === 0) rSancVal += 1;
       if (origTable[5][0][0] === 0) rSancVal += 3;
 
-      if (origTable[7][1][0] === 2) { //trying to keep my pieces  there to cover
+      if (origTable[7][1][0] === 2) {
+        //trying to keep my pieces  there to cover
         rSancVal += 1;
         if (origTable[7][1][1] === 1) rSancVal += 4;
       }
-      if (origTable[6][1][0] === 2) { //trying to keep my pieces  there to cover
+      if (origTable[6][1][0] === 2) {
+        //trying to keep my pieces  there to cover
         rSancVal += 1;
         if (origTable[6][1][1] === 1) rSancVal += 4;
       }
-      if (origTable[5][1][0] === 2) { //trying to keep my pieces  there to cover
+      if (origTable[5][1][0] === 2) {
+        //trying to keep my pieces  there to cover
         rSancVal += 1;
         if (origTable[5][1][1] === 1) rSancVal += 4;
       }
-
     }
 
     if (sancolhat) {
@@ -507,10 +510,10 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
       if (origTable[2][0][1] === 2 && origTable[2][0][0] === 2) lSancVal -= 6; //try to move out bishops
       if (origTable[5][0][1] === 2 && origTable[5][0][0] === 2) rSancVal -= 6;
     }
-
   }
 
-  if (!isWhite && origTable[4][7][3]) { //we play with black and have not moved the king yet
+  if (!isWhite && origTable[4][7][3]) {
+    //we play with black and have not moved the king yet
     sancolhat = false;
 
     if (origTable[0][7][3]) {
@@ -521,15 +524,18 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
       if (origTable[2][7][0] === 0) lSancVal += 3;
       if (origTable[1][7][0] === 0) lSancVal += 1;
 
-      if (origTable[2][6][0] === 1) { //trying to keep my pieces  there to cover
+      if (origTable[2][6][0] === 1) {
+        //trying to keep my pieces  there to cover
         lSancVal += 1;
         if (origTable[2][6][1] === 1) lSancVal += 4;
       }
-      if (origTable[1][6][0] === 1) { //trying to keep my pieces  there to cover
+      if (origTable[1][6][0] === 1) {
+        //trying to keep my pieces  there to cover
         lSancVal += 1;
         if (origTable[1][6][1] === 1) lSancVal += 4;
       }
-      if (origTable[0][6][0] === 1) { //trying to keep my pieces  there to cover
+      if (origTable[0][6][0] === 1) {
+        //trying to keep my pieces  there to cover
         lSancVal += 1;
         if (origTable[0][6][1] === 1) lSancVal += 4;
       }
@@ -542,42 +548,46 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
       if (origTable[6][7][0] === 0) rSancVal += 1;
       if (origTable[5][7][0] === 0) rSancVal += 3;
 
-      if (origTable[7][6][0] === 1) { //trying to keep my pieces  there to cover
+      if (origTable[7][6][0] === 1) {
+        //trying to keep my pieces  there to cover
         rSancVal += 1;
         if (origTable[7][6][1] === 1) rSancVal += 4;
       }
-      if (origTable[6][6][0] === 1) { //trying to keep my pieces  there to cover
+      if (origTable[6][6][0] === 1) {
+        //trying to keep my pieces  there to cover
         rSancVal += 1;
         if (origTable[6][6][1] === 1) rSancVal += 4;
       }
-      if (origTable[5][6][0] === 1) { //trying to keep my pieces  there to cover
+      if (origTable[5][6][0] === 1) {
+        //trying to keep my pieces  there to cover
         rSancVal += 1;
         if (origTable[5][6][1] === 1) rSancVal += 4;
       }
-
     }
-    //	
+    //
     if (sancolhat) {
       if (origTable[3][6][1] === 1 && origTable[3][6][0] === 1) lSancVal -= 4;
       if (origTable[4][6][1] === 1 && origTable[4][6][0] === 1) rSancVal -= 4;
 
       if (origTable[2][7][1] === 2 && origTable[2][7][0] === 1) lSancVal -= 4;
       if (origTable[5][7][1] === 2 && origTable[5][7][0] === 1) rSancVal -= 4;
-
     }
-
   }
   var myMostMoved = 0;
 
   var getToMiddle = 0;
-  for (var lookI = 0; lookI < 8; lookI += 1) { //
-    for (var lookJ = 0; lookJ < 8; lookJ += 1) { //look through the table
+  for (var lookI = 0; lookI < 8; lookI += 1) {
+    //
+    for (var lookJ = 0; lookJ < 8; lookJ += 1) {
+      //look through the table
 
-      if (origTable[lookI][lookJ][0] === origColor) { //ha sajat babum
+      if (origTable[lookI][lookJ][0] === origColor) {
+        //ha sajat babum
 
         //below:	minnel nagyobb erteku babum minnel kozelebb az ellenfel kiralyahoz
 
-        rtnApproachTheKing += ((7 - Math.abs(oppKingPos[0] - lookI)) + (7 - Math.abs(oppKingPos[1] - lookJ))) * origTable[lookI][lookJ][1];
+        rtnApproachTheKing +=
+          (7 - Math.abs(oppKingPos[0] - lookI) + (7 - Math.abs(oppKingPos[1] - lookJ))) * origTable[lookI][lookJ][1];
 
         canMove(lookI, lookJ, isWhite, origTable, true, true, rtnMyHitSum); //this can give back the moves, should use it
         if (origTable[lookI][lookJ][2] > myMostMoved) myMostMoved = origTable[lookI][lookJ][2]; //get the highest number any piece moved
@@ -588,42 +598,40 @@ function getTableData(origTable, isWhite, oppKingPos) { //, rtnSimpleValue) {
           rtnPushHimBack += 7 - lookJ;
         }
 
-        tableValue += PIECE_VALUES[ origTable[lookI][lookJ][1] ];
-
+        tableValue += PIECE_VALUES[origTable[lookI][lookJ][1]];
       } else {
+        if (!(origTable[lookI][lookJ][0] === 0)) {
+          //ha ellenfele
 
-        if (!(origTable[lookI][lookJ][0] === 0)) { //ha ellenfele
-
-          rtnHisMoveCount += (canMove(lookI, lookJ, !isWhite, origTable, true, true, rtnHisHitSum)
-            .length - 2);
+          rtnHisMoveCount += canMove(lookI, lookJ, !isWhite, origTable, true, true, rtnHisHitSum).length - 2;
           if (!isWhite) {
             rtnPushHimBack -= lookJ / 10;
           } else {
             rtnPushHimBack -= (7 - lookJ) / 10;
           }
           //or this tblevalue:
-          tableValue -= PIECE_VALUES[ origTable[lookI][lookJ][1] ];
+          tableValue -= PIECE_VALUES[origTable[lookI][lookJ][1]];
         }
       }
     }
   }
 
-  return [tableValue, rtnMyHitSum[0], rtnHisHitSum[0], // rtnHisMoveCount, 
-    lSancVal, rSancVal, getToMiddle, rtnPushHimBack, myMostMoved, rtnApproachTheKing
+  return [
+    tableValue,
+    rtnMyHitSum[0],
+    rtnHisHitSum[0], // rtnHisMoveCount,
+    lSancVal,
+    rSancVal,
+    getToMiddle,
+    rtnPushHimBack,
+    myMostMoved,
+    rtnApproachTheKing,
   ];
-
 }
 
-
-
-
-
-
-
-
-
 // needed for client
-function canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = [0], dontRemoveInvalid, returnMoveCoords) { //, speedy) {
+function canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = [0], dontRemoveInvalid, returnMoveCoords) {
+  //, speedy) {
   var what = moveTable[k][l][1];
   var possibleMoves = [];
   var scndHitSum = [0];
@@ -648,22 +656,31 @@ function canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = [0], dont
       break;
     default:
   }
-  if (typeof returnMoveCoords !== 'undefined') { //and not undefined..
+  if (typeof returnMoveCoords !== 'undefined') {
+    //and not undefined..
     possibleMoves.forEach(function (move) {
       returnMoveCoords[returnMoveCoords.length] = [k, l, move[0], move[1]];
     });
   }
-  if (!speedy) { //     lefut.
-    for (var i = possibleMoves.length - 1; i >= 0; i -= 1) { //sakkba nem lephetunk
-      if (captured(moveIt([k, l, possibleMoves[i][0], possibleMoves[i][1]], moveTable, dontProt), isWhite)) { //sakkba lepnenk
+  if (!speedy) {
+    //     lefut.
+    for (var i = possibleMoves.length - 1; i >= 0; i -= 1) {
+      //sakkba nem lephetunk
+      if (captured(moveIt([k, l, possibleMoves[i][0], possibleMoves[i][1]], moveTable, dontProt), isWhite)) {
+        //sakkba lepnenk
         possibleMoves.splice(i, 1);
       }
     }
-    if (what === 9 && moveTable[k][l][3]) { //lesznek sanc lepesek is a possibleMoves tombben: kiraly nem mozdult meg
+    if (what === 9 && moveTable[k][l][3]) {
+      //lesznek sanc lepesek is a possibleMoves tombben: kiraly nem mozdult meg
 
-      if (captured(moveTable, isWhite)) { // de sakkban allunk
+      if (captured(moveTable, isWhite)) {
+        // de sakkban allunk
         for (var spliceCount = possibleMoves.length - 1; spliceCount >= 0; spliceCount -= 1) {
-          if (possibleMoves[spliceCount][1] === l && (possibleMoves[spliceCount][0] === k - 2 || possibleMoves[spliceCount][0] === k + 2)) {
+          if (
+            possibleMoves[spliceCount][1] === l &&
+            (possibleMoves[spliceCount][0] === k - 2 || possibleMoves[spliceCount][0] === k + 2)
+          ) {
             possibleMoves.splice(spliceCount, 1); //remove
           }
         }
@@ -672,14 +689,17 @@ function canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = [0], dont
 
       var removeKmin2 = true; //alapbol leszedne
       var removeKplus2 = true;
-      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) { //
+      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) {
+        //
         if (possibleMoves[i][1] === l && possibleMoves[i][0] === k - 1) removeKmin2 = false; //de ha van koztes lepes, ne szedd le
         if (possibleMoves[i][1] === l && possibleMoves[i][0] === k + 1) removeKplus2 = false;
       }
-      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) { //itt szedi le a sanclepeseket
-        if (possibleMoves[i][1] === l &&
-          ((possibleMoves[i][0] === k - 2 && removeKmin2) ||
-            (possibleMoves[i][0] === k + 2 && removeKplus2))) {
+      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) {
+        //itt szedi le a sanclepeseket
+        if (
+          possibleMoves[i][1] === l &&
+          ((possibleMoves[i][0] === k - 2 && removeKmin2) || (possibleMoves[i][0] === k + 2 && removeKplus2))
+        ) {
           possibleMoves.splice(i, 1);
         }
       }
@@ -688,8 +708,18 @@ function canMove(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = [0], dont
   return possibleMoves;
 }
 
-
-function canMoveNoKingHit(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = [0], dontRemoveInvalid, returnMoveCoords) { //, speedy) {
+function canMoveNoKingHit(
+  k,
+  l,
+  isWhite,
+  moveTable,
+  speedy,
+  dontProt,
+  hitSumm = [0],
+  dontRemoveInvalid,
+  returnMoveCoords,
+) {
+  //, speedy) {
   var what = moveTable[k][l][1];
   var possibleMoves = [];
   switch (what) {
@@ -713,22 +743,31 @@ function canMoveNoKingHit(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = 
       break;
     default:
   }
-  if (typeof returnMoveCoords !== 'undefined') { //and not undefined..
+  if (typeof returnMoveCoords !== 'undefined') {
+    //and not undefined..
     possibleMoves.forEach(function (move) {
       returnMoveCoords[returnMoveCoords.length] = [k, l, move[0], move[1]];
     });
   }
-  if (!speedy) { //     lefut.
-    for (var i = possibleMoves.length - 1; i >= 0; i -= 1) { //sakkba nem lephetunk
-      if (captured(moveIt([k, l, possibleMoves[i][0], possibleMoves[i][1]], moveTable, dontProt), isWhite)) { //sakkba lepnenk
+  if (!speedy) {
+    //     lefut.
+    for (var i = possibleMoves.length - 1; i >= 0; i -= 1) {
+      //sakkba nem lephetunk
+      if (captured(moveIt([k, l, possibleMoves[i][0], possibleMoves[i][1]], moveTable, dontProt), isWhite)) {
+        //sakkba lepnenk
         possibleMoves.splice(i, 1);
       }
     }
-    if (what === 9 && moveTable[k][l][3]) { //lesznek sanc lepesek is a possibleMoves tombben: kiraly nem mozdult meg
+    if (what === 9 && moveTable[k][l][3]) {
+      //lesznek sanc lepesek is a possibleMoves tombben: kiraly nem mozdult meg
 
-      if (captured(moveTable, isWhite)) { // de sakkban allunk
+      if (captured(moveTable, isWhite)) {
+        // de sakkban allunk
         for (var spliceCount = possibleMoves.length - 1; spliceCount >= 0; spliceCount -= 1) {
-          if (possibleMoves[spliceCount][1] === l && (possibleMoves[spliceCount][0] === k - 2 || possibleMoves[spliceCount][0] === k + 2)) {
+          if (
+            possibleMoves[spliceCount][1] === l &&
+            (possibleMoves[spliceCount][0] === k - 2 || possibleMoves[spliceCount][0] === k + 2)
+          ) {
             possibleMoves.splice(spliceCount, 1); //remove
           }
         }
@@ -737,14 +776,17 @@ function canMoveNoKingHit(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = 
 
       var removeKmin2 = true; //alapbol leszedne
       var removeKplus2 = true;
-      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) { //
+      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) {
+        //
         if (possibleMoves[i][1] === l && possibleMoves[i][0] === k - 1) removeKmin2 = false; //de ha van koztes lepes, ne szedd le
         if (possibleMoves[i][1] === l && possibleMoves[i][0] === k + 1) removeKplus2 = false;
       }
-      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) { //itt szedi le a sanclepeseket
-        if (possibleMoves[i][1] === l &&
-          ((possibleMoves[i][0] === k - 2 && removeKmin2) ||
-            (possibleMoves[i][0] === k + 2 && removeKplus2))) {
+      for (var i = possibleMoves.length - 1; i >= 0; i -= 1) {
+        //itt szedi le a sanclepeseket
+        if (
+          possibleMoves[i][1] === l &&
+          ((possibleMoves[i][0] === k - 2 && removeKmin2) || (possibleMoves[i][0] === k + 2 && removeKplus2))
+        ) {
           possibleMoves.splice(i, 1);
         }
       }
@@ -755,7 +797,7 @@ function canMoveNoKingHit(k, l, isWhite, moveTable, speedy, dontProt, hitSumm = 
 
 function pushAidA(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatHits) {
   const pieceThere = whatsThereNN(x, y, fromTable);
-  if (pieceThere[0] === 3) return false;  // off the table, dont go further
+  if (pieceThere[0] === 3) return false; // off the table, dont go further
 
   const myCol = isWhite ? 2 : 1;
   const target = fromTable[x][y];
@@ -766,17 +808,16 @@ function pushAidA(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatHits) {
   if (target[0] === 0) return true; // can go further if it was empty space, no hit
 
   // we found a hit
-  var thisHit = PIECE_VALUES[ target[1] ]; //normal hivalue
+  var thisHit = PIECE_VALUES[target[1]]; //normal hivalue
   if (target[6]) thisHit -= whatHits; // protected
 
   if (hitSummmm[0] < thisHit) hitSummmm[0] = thisHit;
   return false; // can't go further
 }
 
-
 function pushAidANoKingHit(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatHits) {
   const pieceThere = whatsThereNN(x, y, fromTable);
-  if (pieceThere[0] === 3) return false;  // off the table, dont go further
+  if (pieceThere[0] === 3) return false; // off the table, dont go further
 
   const myCol = isWhite ? 2 : 1;
   const target = fromTable[x][y];
@@ -789,7 +830,7 @@ function pushAidANoKingHit(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatH
   if (target[0] === 0) return true; // can go further if it was empty space, no hit
 
   // we found a hit
-  var thisHit = PIECE_VALUES[ target[1] ]; //normal hivalue
+  var thisHit = PIECE_VALUES[target[1]]; //normal hivalue
   if (target[6]) thisHit -= whatHits; // protected
 
   if (hitSummmm[0] < thisHit) hitSummmm[0] = thisHit;
@@ -803,11 +844,15 @@ function pushAidP(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatHits) {
 function pushAidPHNoKingHit(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatHits) {
   const nc = isWhite ? 1 : 2;
   if (x > 0 && fromTable[x - 1][y][0] === nc) {
-    if (fromTable[x - 1][y][1] === 9) {/* console.log(new Error().stack); */ throw('illegal')};
+    if (fromTable[x - 1][y][1] === 9) {
+      /* console.log(new Error().stack); */ throw 'illegal';
+    }
     canMoveTo[canMoveTo.length] = [x - 1, y, fromTable[x - 1][y][1]];
   }
   if (x < 7 && fromTable[x + 1][y][0] === nc) {
-    if (fromTable[x + 1][y][1] === 9) {/* console.log(new Error().stack); */ throw('illegal')};
+    if (fromTable[x + 1][y][1] === 9) {
+      /* console.log(new Error().stack); */ throw 'illegal';
+    }
     canMoveTo[canMoveTo.length] = [x + 1, y, fromTable[x + 1][y][1]];
   }
 
@@ -819,8 +864,8 @@ function pushAidPHNoKingHit(hitSummmm, canMoveTo, x, y, fromTable, isWhite, what
 
 function pushAidPH(hitSummmm, canMoveTo, x, y, fromTable, isWhite, whatHits) {
   const nc = isWhite ? 1 : 2;
-  if (x > 0 && fromTable[x - 1][y][0] === nc) canMoveTo[canMoveTo.length] = [x - 1, y, fromTable[x - 1][y][1]]
-  if (x < 7 && fromTable[x + 1][y][0] === nc) canMoveTo[canMoveTo.length] = [x + 1, y, fromTable[x + 1][y][1]]
+  if (x > 0 && fromTable[x - 1][y][0] === nc) canMoveTo[canMoveTo.length] = [x - 1, y, fromTable[x - 1][y][1]];
+  if (x < 7 && fromTable[x + 1][y][0] === nc) canMoveTo[canMoveTo.length] = [x + 1, y, fromTable[x + 1][y][1]];
   if (fromTable[x][y][0] === 0) {
     canMoveTo[canMoveTo.length] = [x, y, 0];
     return true;
@@ -948,7 +993,6 @@ function queenCanMove(k, l, isWhite, moveTable, hitSummm = [0]) {
   return canMoveTo;
 }
 
-
 function queenCanMoveNkh(k, l, isWhite, moveTable, hitSummm = [0]) {
   var canMoveTo = [];
   var i = k + 1;
@@ -986,7 +1030,6 @@ function queenCanMoveNkh(k, l, isWhite, moveTable, hitSummm = [0]) {
   return canMoveTo;
 }
 
-
 function pawnCanMove(k, l, isWhite, moveTable, hitSummm) {
   var canMoveTo = [];
   if (isWhite) {
@@ -1014,7 +1057,6 @@ function pawnCanMove(k, l, isWhite, moveTable, hitSummm) {
   }
   return canMoveTo;
 }
-
 
 function pawnCanMoveNkh(k, l, isWhite, moveTable, hitSummm) {
   var canMoveTo = [];
@@ -1055,14 +1097,21 @@ function kingCanMove(k, l, isWhite, moveTable, hitSummm) {
   pushAidA(hitSummm, canMoveTo, k, l + 1, moveTable, isWhite, 9);
   pushAidA(hitSummm, canMoveTo, k, l - 1, moveTable, isWhite, 9);
   //sanc
-  if (moveTable[k][l][3]) { //if the king hasnt moved yet, 
+  if (moveTable[k][l][3]) {
+    //if the king hasnt moved yet,
     // !!!TODO!!!: ha nincs sakkban, nem is ugrik at sakkot
 
-    if (moveTable[0][l][3] && // unmoved rook on [0][l]
-      moveTable[1][l][0] === 0 && moveTable[2][l][0] === 0 && moveTable[3][l][0] === 0) { //empty between
+    if (
+      moveTable[0][l][3] && // unmoved rook on [0][l]
+      moveTable[1][l][0] === 0 &&
+      moveTable[2][l][0] === 0 &&
+      moveTable[3][l][0] === 0
+    ) {
+      //empty between
       pushAidA(hitSummm, canMoveTo, 2, l, moveTable, isWhite, 9); //mark that cell if empty
     }
-    if (moveTable[7][l][3] && moveTable[5][l][0] === 0 && moveTable[6][l][0] === 0) { //empty between
+    if (moveTable[7][l][3] && moveTable[5][l][0] === 0 && moveTable[6][l][0] === 0) {
+      //empty between
       pushAidA(hitSummm, canMoveTo, 6, l, moveTable, isWhite, 9); //mark that cell if empty
     }
   }
@@ -1080,14 +1129,21 @@ function kingCanMoveNkh(k, l, isWhite, moveTable, hitSummm) {
   pushAidANoKingHit(hitSummm, canMoveTo, k, l + 1, moveTable, isWhite, 9);
   pushAidANoKingHit(hitSummm, canMoveTo, k, l - 1, moveTable, isWhite, 9);
   //sanc
-  if (moveTable[k][l][3]) { //if the king hasnt moved yet, 
+  if (moveTable[k][l][3]) {
+    //if the king hasnt moved yet,
     // !!!TODO!!!: ha nincs sakkban, nem is ugrik at sakkot
 
-    if (moveTable[0][l][3] && // unmoved rook on [0][l]
-      moveTable[1][l][0] === 0 && moveTable[2][l][0] === 0 && moveTable[3][l][0] === 0) { //empty between
+    if (
+      moveTable[0][l][3] && // unmoved rook on [0][l]
+      moveTable[1][l][0] === 0 &&
+      moveTable[2][l][0] === 0 &&
+      moveTable[3][l][0] === 0
+    ) {
+      //empty between
       pushAidANoKingHit(hitSummm, canMoveTo, 2, l, moveTable, isWhite, 9); //mark that cell if empty
     }
-    if (moveTable[7][l][3] && moveTable[5][l][0] === 0 && moveTable[6][l][0] === 0) { //empty between
+    if (moveTable[7][l][3] && moveTable[5][l][0] === 0 && moveTable[6][l][0] === 0) {
+      //empty between
       pushAidANoKingHit(hitSummm, canMoveTo, 6, l, moveTable, isWhite, 9); //mark that cell if empty
     }
   }
@@ -1125,7 +1181,7 @@ export function tableToAptString(table) {
   var stateToRemember = [];
   for (var i = 0; i < 8; i += 1) {
     for (var j = 0; j < 8; j += 1) {
-      var x = 10 * (~~table[i][j][0]) + (~~table[i][j][1]) + 55; //  B vagy nagyobb
+      var x = 10 * ~~table[i][j][0] + ~~table[i][j][1] + 55; //  B vagy nagyobb
       if (x < 65) x = 65; // ez egy nagy A
 
       stateToRemember[8 * i + j] = String.fromCharCode(x);
@@ -1139,7 +1195,7 @@ export const aptStringToTable = (aptString) => {
 
   for (let i = 0; i < 64; i += 1) {
     const numberToUse = aptString.charCodeAt(i) - 55;
-    const remainer = numberToUse % 10
+    const remainer = numberToUse % 10;
     table[Math.floor(i / 8)][i % 8] = [remainer ? Math.floor(numberToUse / 10) : 0, remainer];
   }
 
@@ -1151,14 +1207,18 @@ function getPushString(table, moveCoords) {
   // var cWhatMoves = String(whatM[0]); //color of whats moving
   var pWhatMoves = String(whatM[1]); //piece
 
-  var whatsHit = table[moveCoords[2]][moveCoords[3]][0].toString() + //color of whats hit
+  var whatsHit =
+    table[moveCoords[2]][moveCoords[3]][0].toString() + //color of whats hit
     table[moveCoords[2]][moveCoords[3]][1]; //piece
 
-  if (whatM[1] === 1 && //paraszt
+  if (
+    whatM[1] === 1 && //paraszt
     moveCoords[0] !== moveCoords[2] && //keresztbe
     whatsHit === '00' //uresre
-  ) { //akkor tuti enpass
-    if (whatM[0] === 1) { //fekete
+  ) {
+    //akkor tuti enpass
+    if (whatM[0] === 1) {
+      //fekete
       whatsHit = '21'; //akkor feher parasztot ut
     } else {
       whatsHit = '11';
@@ -1174,12 +1234,11 @@ export function moveInTable(moveCoords, dbTable, isLearner) {
   dbTable.moves.push(toPush);
   dbTable.table = moveIt(moveCoords, dbTable.table); //	<-= 1-= 1moves it
 
-  dbTable.enPassantTarget = (
-    dbTable.table[moveCoords[2]][moveCoords[3]][1] === 1  && // moved a pawn
+  dbTable.enPassantTarget =
+    dbTable.table[moveCoords[2]][moveCoords[3]][1] === 1 && // moved a pawn
     Math.abs(moveCoords[1] - moveCoords[3]) === 2 // made 2 square move
-  ) 
-  ? `${String.fromCharCode(moveCoords[0] + 97)}${(moveCoords[1] + moveCoords[3]) / 2 + 1}`
-  : '-';
+      ? `${String.fromCharCode(moveCoords[0] + 97)}${(moveCoords[1] + moveCoords[3]) / 2 + 1}`
+      : '-';
 
   dbTable.wNext = !dbTable.wNext;
 
@@ -1217,15 +1276,19 @@ export function captured(table, isWhite) {
 
         tempMoves = bishopCanMove(i, j, isWhite, table, [0]);
         for (var tempMoveCount = 0; tempMoveCount < tempMoves.length; tempMoveCount += 1) {
-          if (table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 5 ||
-            table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 2) {
+          if (
+            table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 5 ||
+            table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 2
+          ) {
             return true;
           }
         }
         tempMoves = rookCanMove(i, j, isWhite, table, [0]);
         for (var tempMoveCount = 0; tempMoveCount < tempMoves.length; tempMoveCount += 1) {
-          if (table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 5 ||
-            table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 4) {
+          if (
+            table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 5 ||
+            table[tempMoves[tempMoveCount][0]][tempMoves[tempMoveCount][1]][1] === 4
+          ) {
             return true;
           }
         }
@@ -1306,9 +1369,11 @@ export function moveIt(moveCoords, intable, dontProtect, hitValue) {
 
     thistable[ij][4][3] = false;
   }
-  if (thistable[moveCoords[0]][moveCoords[1]][1] === 1 &&
-    ((moveCoords[1] === 1 && moveCoords[3] === 3) ||
-      (moveCoords[1] === 6 && moveCoords[3] === 4))) { //ha paraszt kettot lep
+  if (
+    thistable[moveCoords[0]][moveCoords[1]][1] === 1 &&
+    ((moveCoords[1] === 1 && moveCoords[3] === 3) || (moveCoords[1] === 6 && moveCoords[3] === 4))
+  ) {
+    //ha paraszt kettot lep
 
     thistable[moveCoords[0]][moveCoords[1]][3] = true; //[3]true for enpass
   }
@@ -1319,7 +1384,7 @@ export function moveIt(moveCoords, intable, dontProtect, hitValue) {
   if (
     thistable[moveCoords[0]][moveCoords[1]][1] === 1 && //paraszt
     thistable[moveCoords[2]][moveCoords[3]][0] === 0 && //uresre
-    (moveCoords[0] !== moveCoords[2]) //keresztbe
+    moveCoords[0] !== moveCoords[2] //keresztbe
   ) {
     enPass = true;
     thistable[moveCoords[2]][moveCoords[3]] = thistable[moveCoords[2]][moveCoords[1]];
@@ -1327,12 +1392,13 @@ export function moveIt(moveCoords, intable, dontProtect, hitValue) {
   }
   hitValue[0] = thistable[moveCoords[2]][moveCoords[3]][1]; //normal hivalue
 
-  if (thistable[moveCoords[0]][moveCoords[1]][1] === 1 && ( //ha paraszt es
+  if (
+    thistable[moveCoords[0]][moveCoords[1]][1] === 1 && //ha paraszt es
     // (thistable[moveCoords[0]][moveCoords[1]][0] === 2 && //es feher
-    moveCoords[3] === 7 || //es 8asra lep vagy
-    // (thistable[moveCoords[0]][moveCoords[1]][0] === 1 && //vagy fekete
-    moveCoords[3] === 0 //1re
-  )) {
+    (moveCoords[3] === 7 || //es 8asra lep vagy
+      // (thistable[moveCoords[0]][moveCoords[1]][0] === 1 && //vagy fekete
+      moveCoords[3] === 0) //1re
+  ) {
     //AKKOR
     thistable[moveCoords[0]][moveCoords[1]][1] = 5; //kiralyno lett
     hitValue[0] += PIECE_VALUES[5] - PIECE_VALUES[1]; //this move worth the difference betwwen queen's and pawn's value (5-1)
@@ -1345,8 +1411,7 @@ export function moveIt(moveCoords, intable, dontProtect, hitValue) {
   //   //}
   thistable[moveCoords[0]][moveCoords[1]][2] += 1; //times moved
 
-  thistable[moveCoords[2]][moveCoords[3]] =
-    thistable[moveCoords[0]][moveCoords[1]];
+  thistable[moveCoords[2]][moveCoords[3]] = thistable[moveCoords[0]][moveCoords[1]];
   thistable[moveCoords[0]][moveCoords[1]] = [0, 0, 0]; //, false, false, false]
   if (!(thistable[moveCoords[2]][moveCoords[3]][1] === 1)) {
     thistable[moveCoords[2]][moveCoords[3]][3] = false;
@@ -1358,120 +1423,128 @@ export function coordsToMoveString(a, b, c, d) {
   return String.fromCharCode(97 + a) + (b + 1) + String.fromCharCode(97 + c) + (d + 1);
 }
 
-function pawnCanMoveN(k, l, moveTable, /*protectedArray null ,*/ c/*, iHitMoves, /*protectScore, possibleMoves*/) {
-  if (c === 2) { //white pawn
-    pushAidXN(k, l, k + 1, l + 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-    pushAidXN(k, l, k - 1, l + 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+function pawnCanMoveN(k, l, moveTable, /*protectedArray null ,*/ c /*, iHitMoves, /*protectScore, possibleMoves*/) {
+  if (c === 2) {
+    //white pawn
+    pushAidXN(k, l, k + 1, l + 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+    pushAidXN(k, l, k - 1, l + 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
     return;
   }
-  pushAidXN(k, l, k + 1, l - 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidXN(k, l, k - 1, l - 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidXN(k, l, k + 1, l - 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidXN(k, l, k - 1, l - 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
 }
 
-function rookCanMoveN(k, l, moveTable, /*protectedArray, */c, /*iHitMoves, protectScore, possibleMoves*/) {
+function rookCanMoveN(k, l, moveTable, /*protectedArray, */ c /*iHitMoves, protectScore, possibleMoves*/) {
   var i = k + 1;
-  while (pushAidNN(k, l, i, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
+  while (pushAidNN(k, l, i, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
   i = k - 1;
-  while (pushAidNN(k, l, i, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
+  while (pushAidNN(k, l, i, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
   i = l + 1;
-  while (pushAidNN(k, l, k, i, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
+  while (pushAidNN(k, l, k, i, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
   i = l - 1;
-  while (pushAidNN(k, l, k, i, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
+  while (pushAidNN(k, l, k, i, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
 }
 
-function bishopCanMoveN(k, l, moveTable, /*protectedArray, */c, /*iHitMoves, protectScore, possibleMoves*/) {
+function bishopCanMoveN(k, l, moveTable, /*protectedArray, */ c /*iHitMoves, protectScore, possibleMoves*/) {
   var i = k + 1;
   var j = l + 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i += 1;
     j += 1;
   }
   i = k - 1;
   j = l - 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i -= 1;
     j -= 1;
   }
   i = k - 1;
   j = l + 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i -= 1;
     j += 1;
   }
   i = k + 1;
   j = l - 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i += 1;
     j -= 1;
   }
 }
 
-function queenCanMoveN(k, l, moveTable, /*protectedArray, */c, /*iHitMoves, protectScore, possibleMoves*/) {
+function queenCanMoveN(k, l, moveTable, /*protectedArray, */ c /*iHitMoves, protectScore, possibleMoves*/) {
   var i = k + 1;
-  while (pushAidNN(k, l, i, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
+  while (pushAidNN(k, l, i, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
   i = k - 1;
-  while (pushAidNN(k, l, i, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
+  while (pushAidNN(k, l, i, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
   i = l + 1;
-  while (pushAidNN(k, l, k, i, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
+  while (pushAidNN(k, l, k, i, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i += 1;
   i = l - 1;
-  while (pushAidNN(k, l, k, i, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
+  while (pushAidNN(k, l, k, i, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) i -= 1;
   i = k + 1;
   var j = l + 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i += 1;
     j += 1;
   }
   i = k - 1;
   j = l - 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i -= 1;
     j -= 1;
   }
   i = k - 1;
   j = l + 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i -= 1;
     j += 1;
   }
   i = k + 1;
   j = l - 1;
-  while (pushAidNN(k, l, i, j, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
+  while (pushAidNN(k, l, i, j, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/)) {
     i += 1;
     j -= 1;
   }
 }
 
-function kingCanMoveN(k, l, moveTable, /*protectedArray, */c, /*iHitMoves, protectScore, possibleMoves*/) {
-  pushAidN(k, l, k + 1, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k - 1, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k + 1, l + 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k - 1, l + 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k + 1, l - 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k - 1, l - 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k, l + 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k, l - 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+function kingCanMoveN(k, l, moveTable, /*protectedArray, */ c /*iHitMoves, protectScore, possibleMoves*/) {
+  pushAidN(k, l, k + 1, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k - 1, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k + 1, l + 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k - 1, l + 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k + 1, l - 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k - 1, l - 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k, l + 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k, l - 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
   //sanc
-  if (moveTable[k][l][3]) { //if the king hasnt moved yet, 
+  if (moveTable[k][l][3]) {
+    //if the king hasnt moved yet,
     // ha nincs sakkban, nem is ugrik at sakkot, minden ures kozotte
-    if (moveTable[0][l][3] && // unmoved rook on [0][l]
-      moveTable[1][l][0] === 0 && moveTable[2][l][0] === 0 && moveTable[3][l][0] === 0) { //empty between
-      pushAidN(k, l, 2, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+    if (
+      moveTable[0][l][3] && // unmoved rook on [0][l]
+      moveTable[1][l][0] === 0 &&
+      moveTable[2][l][0] === 0 &&
+      moveTable[3][l][0] === 0
+    ) {
+      //empty between
+      pushAidN(k, l, 2, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
     }
-    if (moveTable[7][l][3] && moveTable[5][l][0] === 0 && moveTable[6][l][0] === 0) { // unmoved rook on [7][l] && empty between
-      pushAidN(k, l, 6, l, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+    if (moveTable[7][l][3] && moveTable[5][l][0] === 0 && moveTable[6][l][0] === 0) {
+      // unmoved rook on [7][l] && empty between
+      pushAidN(k, l, 6, l, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
     }
   }
 }
 
-function horseCanMoveN(k, l, moveTable, /*protectedArray, */c, /*iHitMoves, protectScore, possibleMoves*/) {
-  pushAidN(k, l, k + 1, l + 2, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k + 1, l - 2, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k - 1, l + 2, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k - 1, l - 2, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k + 2, l + 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k + 2, l - 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k - 2, l + 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
-  pushAidN(k, l, k - 2, l - 1, c, moveTable, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+function horseCanMoveN(k, l, moveTable, /*protectedArray, */ c /*iHitMoves, protectScore, possibleMoves*/) {
+  pushAidN(k, l, k + 1, l + 2, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k + 1, l - 2, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k - 1, l + 2, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k - 1, l - 2, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k + 2, l + 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k + 2, l - 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k - 2, l + 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
+  pushAidN(k, l, k - 2, l - 1, c, moveTable /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/);
 }
 
 function whatsThereN(i, j, table) {
@@ -1484,19 +1557,20 @@ function whatsThereNN(i, j, table) {
   return [3]; // off the table
 }
 
-function pushAidN(k, l, x, y, c, table, /*protectedArray, iHitMoves, /*protectScore, possibleMoves*/) {
+function pushAidN(k, l, x, y, c, table /*protectedArray, iHitMoves, /*protectScore, possibleMoves*/) {
   var isThere = whatsThereN(x, y, table);
-  if (isThere[0] !== 0) { //van ott vmi
+  if (isThere[0] !== 0) {
+    //van ott vmi
     if (isThere[0] === c) {
       //my piece is there
       // protectScore[0] += 1;
-      /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(table[k][l][1]) //protectedBy
+      /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(table[k][l][1]); //protectedBy
 
       // protectedArray[x][y] = true; //protected		//moveit will clear, fastmove not???!!!
     } else {
       //opps piece is there
       // possibleMoves[8 * x + y] = true; // TODO: did this break the stats?
-      /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(table[k][l][1]) //attackedBy
+      /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(table[k][l][1]); //attackedBy
 
       // iHitMoves[iHitMoves.length] = [k, l, x, y, table[k][l][1], table[x][y][1]]; //[who k,l where to x,y who, hits]
     }
@@ -1506,22 +1580,21 @@ function pushAidN(k, l, x, y, c, table, /*protectedArray, iHitMoves, /*protectSc
   return false;
 }
 
-function pushAidXN(k, l, x, y, c, table, /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/) {
+function pushAidXN(k, l, x, y, c, table /* protectedArray, iHitMoves, /*protectScore, possibleMoves*/) {
   if (x < 0 || x > 7) return false; // off the table
-  if (table[x][y][0] !== 0) { //van ott vmi
+  if (table[x][y][0] !== 0) {
+    //van ott vmi
     if (table[x][y][0] === c) {
       //my piece is there
       // protectScore[0] += 1;
 
-
-      /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //protectedBy
+      /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(PIECE_VALUES[table[k][l][1]]); //protectedBy
       // protectedArray[x][y] = true; //protected
     } else {
       //opps piece is there
       // possibleMoves[8 * x + y] = true; // TODO: did this break the stats?
       // iHitMoves[iHitMoves.length] = [k, l, x, y, table[k][l][1], table[x][y][1]]; //[who k,l where to x,y who, hits]
-      /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //attackedBy
-
+      /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(PIECE_VALUES[table[k][l][1]]); //attackedBy
     }
     return true;
   }
@@ -1529,11 +1602,12 @@ function pushAidXN(k, l, x, y, c, table, /* protectedArray, iHitMoves, /*protect
   return false;
 }
 
-function pushAidNN(k, l, x, y, c, table, /*protectedArray, iHitMoves, /*protectScore, possibleMoves*/) {
-  // returns gofurther for rook, bishop or queen 
+function pushAidNN(k, l, x, y, c, table /*protectedArray, iHitMoves, /*protectScore, possibleMoves*/) {
+  // returns gofurther for rook, bishop or queen
   var isThere = whatsThereNN(x, y, table);
   if (isThere[0] === 3) return false; // off the table, dont go further
-  if (isThere[0] === 0) { //ures mezo
+  if (isThere[0] === 0) {
+    //ures mezo
     // possibleMoves[8 * x + y] = true;
     return true; // go further
   }
@@ -1541,12 +1615,11 @@ function pushAidNN(k, l, x, y, c, table, /*protectedArray, iHitMoves, /*protectS
     //my piece is there
     // protectScore[0] += 1;
     // protectedArray[x][y] = true; //protected		//moveit will clear, fastmove not???!!!
-    /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //protectedBy
-
+    /* nem jott be */ table[x][y][3] = (table[x][y][3] || []).concat(PIECE_VALUES[table[k][l][1]]); //protectedBy
   } else {
     //opps piece is there
     // possibleMoves[8 * x + y] = true;
-    /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(PIECE_VALUES[ table[k][l][1] ]) //attackedBy
+    /* nem jott be */ table[x][y][2] = (table[x][y][2] || []).concat(PIECE_VALUES[table[k][l][1]]); //attackedBy
 
     // iHitMoves[iHitMoves.length] = [k, l, x, y, table[k][l][1], table[x][y][1]]; //[who k,l where to x,y who, hits]
   }
@@ -1558,7 +1631,7 @@ function fastMove(moveCoords, intable, dontProtect, hitValue) {
   for (var i = 0; i < 8; i += 1) {
     thistable[i] = new Array(8);
     for (var j = 0; j < 8; j += 1) {
-      thistable[i][j] = [intable[i][j][0], intable[i][j][1]]//new Int8Array(2);
+      thistable[i][j] = [intable[i][j][0], intable[i][j][1]]; //new Int8Array(2);
       // thistable[i][j][0] = intable[i][j][0];
       // thistable[i][j][1] = intable[i][j][1];
     }
@@ -1591,15 +1664,15 @@ function fastMove(moveCoords, intable, dontProtect, hitValue) {
       default:
     }
   }
-  if (thistable[moveCoords[0]][moveCoords[1]][1] === 1 && ( //ha paraszt es
-    moveCoords[3] === 7 || //es 8asra lep vagy
-    moveCoords[3] === 0 //1re
-  )) {
+  if (
+    thistable[moveCoords[0]][moveCoords[1]][1] === 1 && //ha paraszt es
+    (moveCoords[3] === 7 || //es 8asra lep vagy
+      moveCoords[3] === 0) //1re
+  ) {
     // THEN
     thistable[moveCoords[0]][moveCoords[1]][1] = 5; //kiralyno lett
   }
-  thistable[moveCoords[2]][moveCoords[3]] =
-    thistable[moveCoords[0]][moveCoords[1]];
+  thistable[moveCoords[2]][moveCoords[3]] = thistable[moveCoords[0]][moveCoords[1]];
   thistable[moveCoords[0]][moveCoords[1]] = [0, 0, 0]; //, false, false, false]
   return thistable;
 }
@@ -1607,22 +1680,22 @@ function fastMove(moveCoords, intable, dontProtect, hitValue) {
 function newCanMove(k, l, moveTable, c) {
   switch (moveTable[k][l][1]) {
     case 1:
-      pawnCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
+      pawnCanMoveN(k, l, moveTable, /*null protectedArray,*/ c /* iHitMoves, protectScore/*, possibleMoves*/);
       return PREFER_CENTER_TABLE[k][l];
     case 2:
-      bishopCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
+      bishopCanMoveN(k, l, moveTable, /*null protectedArray,*/ c /* iHitMoves, protectScore/*, possibleMoves*/);
       return PREFER_CENTER_TABLE[k][l] * 3;
     case 3:
-      horseCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
+      horseCanMoveN(k, l, moveTable, /*null protectedArray,*/ c /* iHitMoves, protectScore/*, possibleMoves*/);
       return PREFER_CENTER_TABLE[k][l] * 3;
     case 4:
-      rookCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
+      rookCanMoveN(k, l, moveTable, /*null protectedArray,*/ c /* iHitMoves, protectScore/*, possibleMoves*/);
       return PREFER_CENTER_TABLE[k][l] * 5;
     case 5:
-      queenCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
+      queenCanMoveN(k, l, moveTable, /*null protectedArray,*/ c /* iHitMoves, protectScore/*, possibleMoves*/);
       return PREFER_CENTER_TABLE[k][l] * 9;
     case 9:
-      kingCanMoveN(k, l, moveTable, /*null protectedArray,*/ c,/* iHitMoves, protectScore/*, possibleMoves*/);
+      kingCanMoveN(k, l, moveTable, /*null protectedArray,*/ c /* iHitMoves, protectScore/*, possibleMoves*/);
       return 0;
   }
 }
@@ -1649,7 +1722,8 @@ export function getHitScores(origTable, wNext) {
 
   // write data on cells
   for (var lookI = 0; lookI < 8; lookI += 1) {
-    for (var lookJ = 0; lookJ < 8; lookJ += 1) { //look through the table
+    for (var lookJ = 0; lookJ < 8; lookJ += 1) {
+      //look through the table
       const pieceColor = origTable[lookI][lookJ][0];
       if (pieceColor === 0) continue; // empty cell
       if (pieceColor === c) {
@@ -1659,45 +1733,51 @@ export function getHitScores(origTable, wNext) {
       centerScore -= newCanMove(lookI, lookJ, origTable, pieceColor);
     }
   }
-  
+
   // if (Math.random() < 0.00001) console.log({ centerScore })
-  
+
   // process that data gathered above
   let hitScore = 0;
-  let allHitScore = 0
+  let allHitScore = 0;
   let protectScore = 0;
   let attackScore = 0;
 
   for (var lookI = 0; lookI < 8; lookI += 1) {
-    cellLoop:
-    for (var lookJ = 0; lookJ < 8; lookJ += 1) { //look through the table
-      if (origTable[lookI][lookJ][0] === 0 || // empty cell
+    cellLoop: for (var lookJ = 0; lookJ < 8; lookJ += 1) {
+      //look through the table
+      if (
+        origTable[lookI][lookJ][0] === 0 || // empty cell
         !(
-          origTable[lookI][lookJ][2] || // not attacked cell
-          origTable[lookI][lookJ][3]  // not protected cell
+          (
+            origTable[lookI][lookJ][2] || // not attacked cell
+            origTable[lookI][lookJ][3]
+          ) // not protected cell
         )
-      ) continue cellLoop; // nothing to do here
+      )
+        continue cellLoop; // nothing to do here
 
       if (origTable[lookI][lookJ][0] === c) {
         // my piece, will count attack/protect scores, but not hitscore
         if (origTable[lookI][lookJ][2]) {
-          attackScore -= ATTACK_VALUES[ origTable[lookI][lookJ][1] ]; // if attacked deduckt pieceVal from attack score
+          attackScore -= ATTACK_VALUES[origTable[lookI][lookJ][1]]; // if attacked deduckt pieceVal from attack score
           if (origTable[lookI][lookJ][1] === 9) {
             // king is captured. we're not sure if this is the end or just check
             // hitScore -= 10000;
             return -300;
           }
         }
-        if (origTable[lookI][lookJ][3]) protectScore += origTable[lookI][lookJ][3].length * PREFER_CENTER_TABLE[lookI][lookJ]; // if protected add protector count to protect score
+        if (origTable[lookI][lookJ][3])
+          protectScore += origTable[lookI][lookJ][3].length * PREFER_CENTER_TABLE[lookI][lookJ]; // if protected add protector count to protect score
         continue cellLoop; // nothing else to do here
       }
 
       if (origTable[lookI][lookJ][0] !== c && hitScore >= 0) {
         // opponent's piece
-        if (origTable[lookI][lookJ][3]) protectScore -= origTable[lookI][lookJ][3].length * PREFER_CENTER_TABLE[lookI][lookJ]; // if protected deduct protector count from protect score
+        if (origTable[lookI][lookJ][3])
+          protectScore -= origTable[lookI][lookJ][3].length * PREFER_CENTER_TABLE[lookI][lookJ]; // if protected deduct protector count from protect score
         if (!origTable[lookI][lookJ][2]) continue cellLoop; // if not attacked then we're done here
 
-        attackScore += ATTACK_VALUES[ origTable[lookI][lookJ][1] ]; // add pieceVal to attack score
+        attackScore += ATTACK_VALUES[origTable[lookI][lookJ][1]]; // add pieceVal to attack score
 
         let thisCellValue = 0;
         let weakestProtector;
@@ -1705,16 +1785,17 @@ export function getHitScores(origTable, wNext) {
         let hasMoreAttackers;
         let hasMoreProtectors;
 
-        if (!origTable[lookI][lookJ][3]) { // cell has no protector
+        if (!origTable[lookI][lookJ][3]) {
+          // cell has no protector
           // this cell can be hit, add value and check next cell
-          const thisHitScore = PIECE_VALUES[ origTable[lookI][lookJ][1] ];
-          allHitScore += thisHitScore; 
+          const thisHitScore = PIECE_VALUES[origTable[lookI][lookJ][1]];
+          allHitScore += thisHitScore;
           hitScore = Math.max(hitScore, thisHitScore);
           continue cellLoop;
         }
         // cell has protector
 
-        thisCellValue += PIECE_VALUES[ origTable[lookI][lookJ][1] ]; // add cell value
+        thisCellValue += PIECE_VALUES[origTable[lookI][lookJ][1]]; // add cell value
 
         origTable[lookI][lookJ][2].sort((a, b) => b - a); // weakest attacker to the end;
         weakestAttacker = origTable[lookI][lookJ][2].pop();
@@ -1728,7 +1809,7 @@ export function getHitScores(origTable, wNext) {
           weakestAttacker < weakestProtector // the protector worth more than the 1st attacker used
         ) {
           // break here, protector will not be used, doesn't worth it
-          allHitScore += thisCellValue; 
+          allHitScore += thisCellValue;
           hitScore = Math.max(hitScore, thisCellValue);
           continue cellLoop;
         }
@@ -1736,26 +1817,24 @@ export function getHitScores(origTable, wNext) {
 
         thisCellValue -= weakestAttacker; // deduct weakest attacker
 
-        if (!hasMoreAttackers) { // no more attackers
+        if (!hasMoreAttackers) {
+          // no more attackers
           if (thisCellValue > 0) {
-            allHitScore += thisCellValue; 
+            allHitScore += thisCellValue;
             hitScore = Math.max(hitScore, thisCellValue);
-          }//hitScore += thisCellValue; // add cellvalue if worth to hit
+          } //hitScore += thisCellValue; // add cellvalue if worth to hit
           continue cellLoop;
-        };
+        }
         // there are more attackers
 
         weakestAttacker = origTable[lookI][lookJ][2].pop(); // second weakest
         hasMoreProtectors = origTable[lookI][lookJ][3].length !== 0;
         while (true) {
-          if (
-            hasMoreProtectors &&
-            weakestProtector < weakestAttacker
-          ) {
+          if (hasMoreProtectors && weakestProtector < weakestAttacker) {
             // break here, attacker will not be used, doesn't worth it
             if (thisCellValue > 0) {
               // add cellvalue if worth to hit
-              allHitScore += thisCellValue; 
+              allHitScore += thisCellValue;
               hitScore = Math.max(hitScore, thisCellValue);
             }
             continue cellLoop;
@@ -1765,27 +1844,25 @@ export function getHitScores(origTable, wNext) {
           thisCellValue += weakestProtector; // add weakest protector value
 
           // while (true) {
-          if (!hasMoreProtectors) { // no more protectors
+          if (!hasMoreProtectors) {
+            // no more protectors
             if (thisCellValue > 0) {
               // add cellvalue if worth to hit
-              allHitScore += thisCellValue; 
+              allHitScore += thisCellValue;
               hitScore = Math.max(hitScore, thisCellValue);
             }
             continue cellLoop;
-          };
+          }
           // there are more protectors
 
           weakestProtector = origTable[lookI][lookJ][3].pop();
           hasMoreAttackers = origTable[lookI][lookJ][2].length !== 0;
 
-          if (
-            hasMoreAttackers &&
-            weakestAttacker < weakestProtector
-          ) {
+          if (hasMoreAttackers && weakestAttacker < weakestProtector) {
             // break here, attacker will not be used, doesn't worth it
             if (thisCellValue > 0) {
               // add cellvalue if worth to hit
-              allHitScore += thisCellValue; 
+              allHitScore += thisCellValue;
               hitScore = Math.max(hitScore, thisCellValue);
             }
             continue cellLoop;
@@ -1794,14 +1871,15 @@ export function getHitScores(origTable, wNext) {
 
           thisCellValue -= weakestAttacker;
 
-          if (!hasMoreAttackers) { // no more attackers
+          if (!hasMoreAttackers) {
+            // no more attackers
             if (thisCellValue > 0) {
               // add cellvalue if worth to hit
-              allHitScore += thisCellValue; 
+              allHitScore += thisCellValue;
               hitScore = Math.max(hitScore, thisCellValue);
             }
             continue cellLoop;
-          };
+          }
           // there are more attackers
 
           weakestAttacker = origTable[lookI][lookJ][2].pop();
@@ -1826,13 +1904,14 @@ export function getHitScores(origTable, wNext) {
   // if (stats.timeout) clearTimeout(stats.timeout);
   // stats.timeout = setTimeout(() => {console.log(stats)}, 500)
 
-  return hitScore * 400 + /* allHitScore */ + attackScore + protectScore + centerScore;
-};
+  return hitScore * 400 + /* allHitScore */ +attackScore + protectScore + centerScore;
+}
 
-export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve the whole deepening task on one thread
+export function solveDeepeningTask(deepeningTask, isSdt) {
+  //designed to solve the whole deepening task on one thread
   //will return number of smallTasks solved for testing??!!!!!!!!!!!!!!!
   //var taskValue = deepeningTask.
-  var retProgress = deepeningTask.progress
+  var retProgress = deepeningTask.progress;
 
   // var startedAt = new Date().getTime()
   if (isSdt) {
@@ -1846,11 +1925,11 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
       // mod: deepeningTask.mod,
       shouldIDraw: deepeningTask.shouldIDraw,
       currentBests: deepeningTask.currentBests,
-    }
-    deepeningTask = tempDeepeningTask
+    };
+    deepeningTask = tempDeepeningTask;
   }
 
-  var resolverArray = [] //multidim, for each depth the results, will be updated a million times
+  var resolverArray = []; //multidim, for each depth the results, will be updated a million times
 
   // TODO: why is this +2?
   var p2 = deepeningTask.desiredDepth + 2;
@@ -1868,14 +1947,13 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
     try {
       var resultingSDTs = solveSmallDeepeningTask(smallDeepeningTask, resolverArray, deepeningTask.smallDeepeningTasks);
 
-
       for (var l = resultingSDTs.length - 1; l >= 0; l -= 1) {
         deepeningTask.smallDeepeningTasks[deepeningTask.smallDeepeningTasks.length] = resultingSDTs[l]; //at the beginning the unsent array is just growing but then we run out
       }
     } catch (e) {
-      if (e !== 'illegal') throw(e);
+      if (e !== 'illegal') throw e;
     }
-    
+
     //call it again if there are tasks
   }
   // var timeItTook = new Date()
@@ -1889,38 +1967,46 @@ export function solveDeepeningTask(deepeningTask, isSdt) { //designed to solve t
     // timeItTook: timeItTook,
     currentBests,
     score: resolverArray[2][0].value,
-    moveTree: resolverArray[2][0].moveTree//.join(',')
-  }
+    moveTree: resolverArray[2][0].moveTree, //.join(',')
+  };
   if (isSdt !== true) {
-    ret.score = resolverArray[1][0].value
-
+    ret.score = resolverArray[1][0].value;
   }
-  return ret
+  return ret;
 }
 
-export function oneDeeper(deepeningTask) { //only takes original first level deepeningtasks??
-  var resolverArray = []
-  var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop()
-  var tempTasks = solveSmallDeepeningTask(smallDeepeningTask,
-    smallDeepeningTask.resolverArray, deepeningTask.smallDeepeningTasks) //, counter)
+export function oneDeeper(deepeningTask) {
+  //only takes original first level deepeningtasks??
+  var resolverArray = [];
+  var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop();
+  var tempTasks = solveSmallDeepeningTask(
+    smallDeepeningTask,
+    smallDeepeningTask.resolverArray,
+    deepeningTask.smallDeepeningTasks,
+  ); //, counter)
   while (tempTasks.length > 0) {
-    var tempTask = tempTasks.pop()
+    var tempTask = tempTasks.pop();
     deepeningTask.smallDeepeningTasks[deepeningTask.smallDeepeningTasks.length] = tempTask;
   }
-  deepeningTask.smallDeepeningTasksCopy = deepeningTask.smallDeepeningTasks.slice()
-  deepeningTask.resolverArray = resolverArray
-
+  deepeningTask.smallDeepeningTasksCopy = deepeningTask.smallDeepeningTasks.slice();
+  deepeningTask.resolverArray = resolverArray;
 }
 
-export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdts = [{ trItm: true }, { trItm: true }], sdt = {}) {
+export function resolveDepth(
+  depth,
+  resolverArray,
+  currentBests = [],
+  remaingSdts = [{ trItm: true }, { trItm: true }],
+  sdt = {},
+) {
   const inverse = depth & 1;
   var raDm1 = resolverArray[depth - 1];
-  
+
   if (resolverArray[depth].length === 0) {
     // there are no valid return moves
     if (depth === 2) {
       const isWin = captured(sdt.thisTaskTable, !inverse);
-        
+
       if (isWin) {
         raDm1[raDm1.length] = {
           value: 30000,
@@ -1930,7 +2016,7 @@ export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdt
         resolverArray[depth] = [];
         delete currentBests[depth];
         return;
-      } 
+      }
       // this move would yield a draw.
 
       if (sdt.shouldIDraw) {
@@ -1954,10 +2040,9 @@ export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdt
       return;
     }
 
-
     raDm1[raDm1.length] = {
       value: inverse ? -10000000 : 10000000,
-      moveTree: sdt.moveTree
+      moveTree: sdt.moveTree,
     };
 
     resolverArray[depth] = [];
@@ -1965,25 +2050,24 @@ export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdt
     return;
   }
   if (inverse) {
-    raDm1[raDm1.length] = resolverArray[depth].reduce(
-      function (previousValue, currentValue, index, array) {
-        if (currentValue.value > previousValue.value) {
-          return {
-            value: currentValue.value,
-            moveTree: currentValue.moveTree
-          }
-        } else {
-          return {
-            value: previousValue.value,
-            moveTree: previousValue.moveTree
-          }
-        }
+    raDm1[raDm1.length] = resolverArray[depth].reduce(function (previousValue, currentValue, index, array) {
+      if (currentValue.value > previousValue.value) {
+        return {
+          value: currentValue.value,
+          moveTree: currentValue.moveTree,
+        };
+      } else {
+        return {
+          value: previousValue.value,
+          moveTree: previousValue.moveTree,
+        };
       }
-    )
+    });
 
-    currentBests[depth - 1] = (typeof currentBests[depth - 1] === 'undefined')
-      ? raDm1[raDm1.length - 1].value
-      : Math.min(currentBests[depth - 1], raDm1[raDm1.length - 1].value);
+    currentBests[depth - 1] =
+      typeof currentBests[depth - 1] === 'undefined'
+        ? raDm1[raDm1.length - 1].value
+        : Math.min(currentBests[depth - 1], raDm1[raDm1.length - 1].value);
 
     if (currentBests[depth - 2] >= currentBests[depth - 1] && remaingSdts.length) {
       let lastTrItmIndex = remaingSdts.length - 1;
@@ -1991,25 +2075,24 @@ export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdt
       remaingSdts.length = lastTrItmIndex + 1;
     }
   } else {
-    raDm1[raDm1.length] = resolverArray[depth].reduce(
-      function (previousValue, currentValue, index, array) {
-        if (currentValue.value < previousValue.value) {
-          return {
-            value: currentValue.value,
-            moveTree: currentValue.moveTree
-          }
-        } else {
-          return {
-            value: previousValue.value,
-            moveTree: previousValue.moveTree
-          }
-        }
+    raDm1[raDm1.length] = resolverArray[depth].reduce(function (previousValue, currentValue, index, array) {
+      if (currentValue.value < previousValue.value) {
+        return {
+          value: currentValue.value,
+          moveTree: currentValue.moveTree,
+        };
+      } else {
+        return {
+          value: previousValue.value,
+          moveTree: previousValue.moveTree,
+        };
       }
-    )
+    });
 
-    currentBests[depth - 1] = (typeof currentBests[depth - 1] === 'undefined')
-      ? raDm1[raDm1.length - 1].value
-      : Math.max(currentBests[depth - 1], raDm1[raDm1.length - 1].value);
+    currentBests[depth - 1] =
+      typeof currentBests[depth - 1] === 'undefined'
+        ? raDm1[raDm1.length - 1].value
+        : Math.max(currentBests[depth - 1], raDm1[raDm1.length - 1].value);
 
     if (currentBests[depth - 2] <= currentBests[depth - 1]) {
       let lastTrItmIndex = remaingSdts.length - 1;
@@ -2035,71 +2118,70 @@ export function resolveDepth(depth, resolverArray, currentBests = [], remaingSdt
 //   this.moveCountTree = moveCountTree
 // }
 
-export const DeepeningTask = function (smallMoveTask) { //keep this fast, designed for main thread and mainWorker ???not sure..     //smallMoveTask is a smallMoveTask, to be deepend further
+export const DeepeningTask = function (smallMoveTask) {
+  //keep this fast, designed for main thread and mainWorker ???not sure..     //smallMoveTask is a smallMoveTask, to be deepend further
   // runs once for each possible return move. few dozen times max per move
-  this.shouldIDraw = smallMoveTask.sharedData.shouldIDraw
-  this.currentBests = smallMoveTask.sharedData.currentBests
-  this.firstLevelMoveCount = smallMoveTask.firstLevelMoveCount
-  this.mod = smallMoveTask.mod
-  this.gameNum = smallMoveTask.sharedData.gameNum
-  this.progress = smallMoveTask.progress
-  this.resolverArray = []
-  this.initialWNext = smallMoveTask.sharedData.origWNext
+  this.shouldIDraw = smallMoveTask.sharedData.shouldIDraw;
+  this.currentBests = smallMoveTask.sharedData.currentBests;
+  this.firstLevelMoveCount = smallMoveTask.firstLevelMoveCount;
+  this.mod = smallMoveTask.mod;
+  this.gameNum = smallMoveTask.sharedData.gameNum;
+  this.progress = smallMoveTask.progress;
+  this.resolverArray = [];
+  this.initialWNext = smallMoveTask.sharedData.origWNext;
   this.moveStr = smallMoveTask.moveCoords;
-  this.initialTreeMoves = [this.moveStr] //to put in first smallmovetask
-  this.startingTable = smallMoveTask.sharedData.origTable //this was calculated in advance when getting the first moves: that resulted in this.everything
-  this.startingAllPastTables = smallMoveTask.sharedData.allPast
-  this.thisTaskTable = moveIt(this.moveStr, this.startingTable, true) //this is the first and should be only time calculating this!!!!!
+  this.initialTreeMoves = [this.moveStr]; //to put in first smallmovetask
+  this.startingTable = smallMoveTask.sharedData.origTable; //this was calculated in advance when getting the first moves: that resulted in this.everything
+  this.startingAllPastTables = smallMoveTask.sharedData.allPast;
+  this.thisTaskTable = moveIt(this.moveStr, this.startingTable, true); //this is the first and should be only time calculating this!!!!!
   //takes time
 
-  const pawnMoveVal = this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1
-    ? this.initialWNext ? smallMoveTask.moveCoords[1] - 1 : 6 - smallMoveTask.moveCoords[1]
-    : 0;
+  const pawnMoveVal =
+    this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1
+      ? this.initialWNext
+        ? smallMoveTask.moveCoords[1] - 1
+        : 6 - smallMoveTask.moveCoords[1]
+      : 0;
 
-  this.firstDepthValue = PIECE_VALUES[ this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1] ] * 400 + pawnMoveVal;       //smallMoveTask.firstDepthValue
-  
-  if (this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1 && [0, 7].includes(smallMoveTask.moveCoords[3])) {
+  this.firstDepthValue =
+    PIECE_VALUES[this.startingTable[smallMoveTask.moveCoords[2]][smallMoveTask.moveCoords[3]][1]] * 400 + pawnMoveVal; //smallMoveTask.firstDepthValue
+
+  if (
+    this.startingTable[smallMoveTask.moveCoords[0]][smallMoveTask.moveCoords[1]][1] === 1 &&
+    [0, 7].includes(smallMoveTask.moveCoords[3])
+  ) {
     // pawn becomes queen
     this.firstDepthValue += (PIECE_VALUES[5] - PIECE_VALUES[1]) * 400;
   }
-  
-  this.initialTreeMoves = [this.moveStr, this.firstDepthValue] //to put in first smallmovetask
-  this.desiredDepth = smallMoveTask.sharedData.desiredDepth //we will deepen until depth reaches this number
-  this.actualDepth = 1 //its 1 because we have 1st level resulting table fixed. 
+
+  this.initialTreeMoves = [this.moveStr, this.firstDepthValue]; //to put in first smallmovetask
+  this.desiredDepth = smallMoveTask.sharedData.desiredDepth; //we will deepen until depth reaches this number
+  this.actualDepth = 1; //its 1 because we have 1st level resulting table fixed.
   //increase this when generating deeper tables, loop while this is smaller than desiredDepth
 
   //this task should be sent back to the server so lets ke
 
+  this.tableTree = []; //fill multiDIM array with resulting tables during processing
+  this.moveStrTree = []; //twin array with movesString
 
-  this.tableTree = [] //fill multiDIM array with resulting tables during processing
-  this.moveStrTree = [] //twin array with movesString
+  this.tableTree[0] = [this.startingTable]; // depth 0 table, startingTable: only one in an array
 
+  this.tableTree[1] = [this.thisTaskTable]; // depth 1 tables, we only have one in this task but there are more in total
 
-  this.tableTree[0] = [this.startingTable] // depth 0 table, startingTable: only one in an array
-
-  this.tableTree[1] = [this.thisTaskTable] // depth 1 tables, we only have one in this task but there are more in total
-
-  this.tableTree[2] = [] // depth 2 tables are empty at init, we will fill these in when processing this deepeningTask. after each depth we'll create the next empty array
+  this.tableTree[2] = []; // depth 2 tables are empty at init, we will fill these in when processing this deepeningTask. after each depth we'll create the next empty array
 
   //there will be more levels here with a lot of tables
 
   //moveStings is one level deeper array, strings get longer each level to keep track of table!!!!!!
-  this.moveStrTree[0] = [
-    []
-  ] //???					// depth 0 movestrings, meaning 'how did we get here?'	these are always unknown
+  this.moveStrTree[0] = [[]]; //???					// depth 0 movestrings, meaning 'how did we get here?'	these are always unknown
 
-  this.moveStrTree[1] = [
-    [this.moveStr]
-  ] // depth 1 movestrings, meaning 'how did we get here?', we only have one in this task but there are more in total
+  this.moveStrTree[1] = [[this.moveStr]]; // depth 1 movestrings, meaning 'how did we get here?', we only have one in this task but there are more in total
 
-  this.moveStrTree[2] = [
-    []
-  ] // depth 2 movestrings, meaning 'how did we get here?', we will fill these together with the tableTree, all indexes will match as move=>resulting table
+  this.moveStrTree[2] = [[]]; // depth 2 movestrings, meaning 'how did we get here?', we will fill these together with the tableTree, all indexes will match as move=>resulting table
 
   //there will be more levels here with a lot of moveStrings
 
-
-  this.smallDeepeningTaskCounts = [0, 1] //this will be an array of the total created smalldeepeningtasks per depth, depth 0 has 0, depth 1 has one in this splitmove
+  this.smallDeepeningTaskCounts = [0, 1]; //this will be an array of the total created smalldeepeningtasks per depth, depth 0 has 0, depth 1 has one in this splitmove
 
   var initialSmallDeepeningTask = {
     // gameNum: this.gameNum,
@@ -2113,41 +2195,39 @@ export const DeepeningTask = function (smallMoveTask) { //keep this fast, design
     shouldIDraw: this.shouldIDraw,
     moveCountTree: [this.firstLevelMoveCount],
     currentBests: this.currentBests,
-  }
-  this.smallDeepeningTasks = [initialSmallDeepeningTask] //to be sent out for multiplying when processing for level 2 (unless desireddepth is 1)
-  //this.pendingSmallDeepeningTasks=[]				//here we will keep the pending smalltasks: sent out 
-  this.solvedSmallDeepeningTasks = [] //here we will keep the results until stepping to next depth, ready for next level when this.length equals count
-
-
-}
+  };
+  this.smallDeepeningTasks = [initialSmallDeepeningTask]; //to be sent out for multiplying when processing for level 2 (unless desireddepth is 1)
+  //this.pendingSmallDeepeningTasks=[]				//here we will keep the pending smalltasks: sent out
+  this.solvedSmallDeepeningTasks = []; //here we will keep the results until stepping to next depth, ready for next level when this.length equals count
+};
 
 export function singleThreadAi(tempDbTable, depth, cb, mod) {
   var dbTable = JSON.parse(JSON.stringify(tempDbTable));
-  dbTable.moveTask = new MoveTaskN(dbTable, mod)
-  dbTable.moveTask.sharedData.desiredDepth = depth
-  var tempMoves = new SplitMove(dbTable).movesToSend
-  var result = []
+  dbTable.moveTask = new MoveTaskN(dbTable, mod);
+  dbTable.moveTask.sharedData.desiredDepth = depth;
+  var tempMoves = new SplitMove(dbTable).movesToSend;
+  var result = [];
   tempMoves.forEach(function (smallMoveTask, index) {
-    var deepeningTask = new DeepeningTask(smallMoveTask)
-    oneDeeper(deepeningTask) //this will make about 30 smalldeepeningtasks from the initial 1 and create deepeningtask.resolverarray
+    var deepeningTask = new DeepeningTask(smallMoveTask);
+    oneDeeper(deepeningTask); //this will make about 30 smalldeepeningtasks from the initial 1 and create deepeningtask.resolverarray
     //first item in deepeningtask.smalldeepeningtasks is trigger
-    var res = []
+    var res = [];
     while (deepeningTask.smallDeepeningTasks.length > 1) {
-      var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop()
-      smallDeepeningTask.progress = deepeningTask.progress
-      var res2 = solveDeepeningTask(smallDeepeningTask, true)
-      res2.value = res2.score
+      var smallDeepeningTask = deepeningTask.smallDeepeningTasks.pop();
+      smallDeepeningTask.progress = deepeningTask.progress;
+      var res2 = solveDeepeningTask(smallDeepeningTask, true);
+      res2.value = res2.score;
       res[res.length] = res2;
     }
 
-    var tempResolveArray = [[], res, []]
-    resolveDepth(2, tempResolveArray, smallDeepeningTask.currentBests)
+    var tempResolveArray = [[], res, []];
+    resolveDepth(2, tempResolveArray, smallDeepeningTask.currentBests);
 
-    var pushAgain = tempResolveArray[1][0]
-    var moveCoords = pushAgain.moveTree[0]//.slice(0, 4)
+    var pushAgain = tempResolveArray[1][0];
+    var moveCoords = pushAgain.moveTree[0]; //.slice(0, 4)
 
-    pushAgain.score = pushAgain.value
-    pushAgain.move = moveCoords
+    pushAgain.score = pushAgain.value;
+    pushAgain.move = moveCoords;
     result[result.length] = pushAgain;
   });
 
@@ -2156,8 +2236,8 @@ export function singleThreadAi(tempDbTable, depth, cb, mod) {
   var finalResult = {
     result: result,
     winningMove: result[0],
-    moveCoords: result[0].moveTree[0]//.slice(0, 4)
-  }
-  if (cb) cb(finalResult)
-  return finalResult
+    moveCoords: result[0].moveTree[0], //.slice(0, 4)
+  };
+  if (cb) cb(finalResult);
+  return finalResult;
 }
