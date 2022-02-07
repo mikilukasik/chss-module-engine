@@ -20,8 +20,8 @@ export const getMovedBoard = (move, board) => {
       if (sourceIndex - targetIndex === 16) copiedBoard[66] = targetIndex + 8; // white pawn double move, set en passant target
 
       // pawn can become queen
-      if (targetIndex >>> 3 === 0) copiedBoard[targetIndex] = (move >>> 6 && 63) || 13;
-      if (targetIndex >>> 3 === 7) copiedBoard[targetIndex] = (move >>> 6 && 63) || 5;
+      if (targetIndex >>> 3 === 0) copiedBoard[targetIndex] = move >>> 6 && 63;
+      if (targetIndex >>> 3 === 7) copiedBoard[targetIndex] = move >>> 6 && 63;
       break;
 
     case 4:
