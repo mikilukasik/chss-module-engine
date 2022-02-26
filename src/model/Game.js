@@ -14,9 +14,10 @@ export class GameModel {
     fen = 'rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1',
     bitBoard,
     board,
-    wNext = true,
     tournamentInfo,
   } = {}) {
+    const wNext = fen.split(' ')[1] === 'w';
+
     this.wPlayer = wPlayer;
     this.bPlayer = bPlayer;
     this.wName = wName;

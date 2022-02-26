@@ -33,7 +33,6 @@ export const moveInBoard = (move, game) => {
   if (game.nextMoves.length === 0) {
     game.completed = true;
 
-    // TODO: the below might be wrong wNext
     if (isCaptured(game.bitBoard, game.bitBoard.indexOf(6 + (game.bitBoard[64] << 3)), game.bitBoard[64])) {
       game[game.wNext ? 'blackWon' : 'whiteWon'] = true;
     } else {
