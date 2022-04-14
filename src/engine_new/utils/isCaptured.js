@@ -1,4 +1,4 @@
-import { getKnightMoves } from "../moveGenerators/getKnightMoves";
+import { getKnightMoves } from '../moveGenerators/getKnightMoves.js';
 
 export const isCaptured = (board, cellIndex, color) => {
   const rank = cellIndex >>> 3;
@@ -23,7 +23,7 @@ export const isCaptured = (board, cellIndex, color) => {
 
   // check for bishop, rook, or king
   // rank is used instead of maxMovesUp
-  const maxMovesLeft = cellIndex & 7;  // equals to file
+  const maxMovesLeft = cellIndex & 7; // equals to file
   const maxMovesDown = 7 - rank;
   const maxMovesRight = 7 - maxMovesLeft;
 

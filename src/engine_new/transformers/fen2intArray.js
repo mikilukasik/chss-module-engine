@@ -1,14 +1,14 @@
-import { cellStrToIndex } from "./cellStrToIndex";
+import { cellStrToIndex } from './cellStrToIndex.js';
 
 const pieces = ['', 'p', 'b', 'n', 'r', 'q', 'k', '', '', 'P', 'B', 'N', 'R', 'Q', 'K'];
 const castlingValues = ['-', 'q', 'k', '', 'Q', '', '', '', 'K'];
 
 export const fen2intArray = (fen) => {
   const [boardStr, next, castling, enpassantTarget] = fen.split(' ');
-  
-  const buffer = new ArrayBuffer(67);     // 64 cells + wNext + castling + enPassantTarget
+
+  const buffer = new ArrayBuffer(67); // 64 cells + wNext + castling + enPassantTarget
   const board = new Int8Array(buffer);
-  
+
   let nextByteIndex = 0;
   for (const char of boardStr.split('')) {
     if (char === '/') continue;
@@ -18,12 +18,12 @@ export const fen2intArray = (fen) => {
       continue;
     }
 
-    board[nextByteIndex ++] = pieces.indexOf(char);
+    board[nextByteIndex++] = pieces.indexOf(char);
   }
 
   if (next === 'w') board[64] = 1;
 
-  castling.split('').forEach(char => {
+  castling.split('').forEach((char) => {
     board[65] += castlingValues.indexOf(char);
   });
 

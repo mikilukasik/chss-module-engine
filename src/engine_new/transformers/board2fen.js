@@ -1,7 +1,24 @@
-import { cellIndex2cellStr } from "./cellIndex2cellStr";
+import { cellIndex2cellStr } from './cellIndex2cellStr.js';
 
 const pieces = ['', 'p', 'b', 'n', 'r', 'q', 'k', '', '', 'P', 'B', 'N', 'R', 'Q', 'K'];
-const castlingStrings = ['-', 'q', 'k', 'kq', 'Q', 'Qq', 'Qk', 'Qkq', 'K', 'Kq', 'Kk', 'Kkq', 'KQ', 'KQq', 'KQk', 'KQkq']
+const castlingStrings = [
+  '-',
+  'q',
+  'k',
+  'kq',
+  'Q',
+  'Qq',
+  'Qk',
+  'Qkq',
+  'K',
+  'Kq',
+  'Kk',
+  'Kkq',
+  'KQ',
+  'KQq',
+  'KQk',
+  'KQkq',
+];
 
 export const board2fen = (board) => {
   let fen = '';
@@ -18,7 +35,7 @@ export const board2fen = (board) => {
       blankCellCount += 1;
       return;
     }
-    
+
     if (blankCellCount) {
       fen = `${fen}${blankCellCount}`;
       blankCellCount = 0;
