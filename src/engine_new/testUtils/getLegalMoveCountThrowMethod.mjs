@@ -1,6 +1,6 @@
-import { generatePseudoMovesThrowMethod } from '../moveGenerators/generatePseudoMovesThrowMethod';
-import { getMovedBoard } from '../utils/getMovedBoard';
-import { isCaptured } from '../utils/isCaptured';
+import { generatePseudoMovesThrowMethod } from '../moveGenerators/generatePseudoMovesThrowMethod.js';
+import { getMovedBoard } from '../utils/getMovedBoard.js';
+import { isCaptured } from '../utils/isCaptured.js';
 
 export const getLegalMoveCountThrowMethod = (board, depth) => {
   const depthMinusOne = depth - 1;
