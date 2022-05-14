@@ -1,8 +1,6 @@
-import { getInitialTable } from './table';
 import uuid from 'uuid-random';
-import { addMovesToTable, tableToAptString } from '../engine/engine';
-import { fen2intArray } from '../engine_new/transformers/fen2intArray';
-import { generateLegalMoves } from '../engine_new/moveGenerators/generateLegalMoves';
+import { fen2intArray } from '../engine_new/transformers/fen2intArray.js';
+import { generateLegalMoves } from '../engine_new/moveGenerators/generateLegalMoves.js';
 export class GameModel {
   constructor({
     wPlayer = null,

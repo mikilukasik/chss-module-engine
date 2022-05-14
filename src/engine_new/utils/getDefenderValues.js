@@ -1,4 +1,4 @@
-import { getKnightMoves } from "../moveGenerators/getKnightMoves";
+import { getKnightMoves } from '../moveGenerators/getKnightMoves.js';
 
 export const getDefenderValues = (board, cellIndex, color) => {
   const defenderValues = [];
@@ -19,11 +19,12 @@ export const getDefenderValues = (board, cellIndex, color) => {
 
   // check if captured by knight
   const lookForKnightOn = getKnightMoves(cellIndex, board, color);
-  for (const cellToCheckKnightFor of lookForKnightOn) if ((board[cellToCheckKnightFor] & 7) === 3) defenderValues[defenderValues.length] = 3;
+  for (const cellToCheckKnightFor of lookForKnightOn)
+    if ((board[cellToCheckKnightFor] & 7) === 3) defenderValues[defenderValues.length] = 3;
 
   // check for bishop, rook, or king
   // rank is used instead of maxMovesUp
-  const maxMovesLeft = cellIndex & 7;  // equals to file
+  const maxMovesLeft = cellIndex & 7; // equals to file
   const maxMovesDown = 7 - rank;
   const maxMovesRight = 7 - maxMovesLeft;
 
@@ -38,7 +39,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingBishop) defenderValues[defenderValues.length] = 3;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 9) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 9)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 
@@ -47,7 +49,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingBishop) defenderValues[defenderValues.length] = 3;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 7) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 7)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 
@@ -56,7 +59,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingBishop) defenderValues[defenderValues.length] = 3;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 7) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 7)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 
@@ -65,7 +69,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingBishop) defenderValues[defenderValues.length] = 3;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 9) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 9)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 
@@ -74,7 +79,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingRook) defenderValues[defenderValues.length] = 5;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 8) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 8)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 
@@ -83,7 +89,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingRook) defenderValues[defenderValues.length] = 5;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 1) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 1)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 
@@ -92,7 +99,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingRook) defenderValues[defenderValues.length] = 5;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 8) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex + 8)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 
@@ -101,7 +109,8 @@ export const getDefenderValues = (board, cellIndex, color) => {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === defendingRook) defenderValues[defenderValues.length] = 5;
     if (board[currentCellIndex] === defendingQueen) defenderValues[defenderValues.length] = 9;
-    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 1) defenderValues[defenderValues.length] = 64;
+    if (board[currentCellIndex] === defendingKing && currentCellIndex === cellIndex - 1)
+      defenderValues[defenderValues.length] = 64;
     break;
   }
 

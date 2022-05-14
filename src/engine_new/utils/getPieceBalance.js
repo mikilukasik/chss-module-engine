@@ -1,4 +1,4 @@
-import { pieceCharValues } from './pieceValues';
+import { pieceCharValues } from './pieceValues.js';
 
 export const getPieceBalance = ({ fen }) =>
   Math.round(

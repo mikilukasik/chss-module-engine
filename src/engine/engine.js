@@ -1,10 +1,8 @@
-import { getMovedBoard } from '../engine_new/utils/getMovedBoard';
-import { generateLegalMoves } from '../engine_new/moveGenerators/generateLegalMoves';
-import { isCaptured } from '../engine_new/utils/isCaptured';
-import { board2fen } from '../engine_new/transformers/board2fen';
-import { evaluateBoard } from '../engine_new/evaluators/evaluateBoard';
-
-const moveToMoveCoords = (move) => [(move >> 10) & 7, 7 - (move >>> 13), move & 7, 7 - ((move >> 3) & 7)];
+import { getMovedBoard } from '../engine_new/utils/getMovedBoard.js';
+import { generateLegalMoves } from '../engine_new/moveGenerators/generateLegalMoves.js';
+import { isCaptured } from '../engine_new/utils/isCaptured.js';
+import { board2fen } from '../engine_new/transformers/board2fen.js';
+import { evaluateBoard } from '../engine_new/evaluators/evaluateBoard.js';
 
 export const moveString2move = (moveStr) =>
   ((8 - Number(moveStr[1])) << 13) +

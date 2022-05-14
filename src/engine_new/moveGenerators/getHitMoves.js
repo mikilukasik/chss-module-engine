@@ -1,9 +1,9 @@
-import { getBishopHitMoves } from "./getBishopHitMoves";
-import { getKingHitMoves } from "./getKingHitMoves";
-import { getKnightHitMoves } from "./getKnightHitMoves";
-import { getPawnHitMoves } from "./getPawnHitMoves";
-import { getQueenHitMoves } from "./getQueenHitMoves";
-import { getRookHitMoves } from "./getRookHitMoves";
+import { getBishopHitMoves } from './getBishopHitMoves.js';
+import { getKingHitMoves } from './getKingHitMoves.js';
+import { getKnightHitMoves } from './getKnightHitMoves.js';
+import { getPawnHitMoves } from './getPawnHitMoves.js';
+import { getQueenHitMoves } from './getQueenHitMoves.js';
+import { getRookHitMoves } from './getRookHitMoves.js';
 
 const moveGenerators = [
   null,
