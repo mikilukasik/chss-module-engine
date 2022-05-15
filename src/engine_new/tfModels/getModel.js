@@ -1,5 +1,4 @@
 import * as tf from '@tensorflow/tfjs';
-
 import { setWasmPaths } from '@tensorflow/tfjs-backend-wasm';
 
 let hostname = '';
@@ -14,7 +13,7 @@ const getModelResolvers = {};
 
 const loadTransform = async (modelName) => {
   const transformAsString = await (await fetch(`http://${hostname}:3300/models/${modelName}/transform.js`)).text();
-  return eval(transformAsString);
+  return eval(`(() => {${transformAsString.replace('module.exports =', 'return ')}})()`);
 };
 
 const loadConstants = async (modelName) => {

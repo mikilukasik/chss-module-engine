@@ -1,5 +1,5 @@
-import { board2fen } from '../transformers/board2fen';
-import { getModel } from './getModel';
+import { board2fen } from '../transformers/board2fen.js';
+import { getModel } from './getModel.js';
 
 import * as tf from '@tensorflow/tfjs';
 import { setWasmPaths } from '@tensorflow/tfjs-backend-wasm';

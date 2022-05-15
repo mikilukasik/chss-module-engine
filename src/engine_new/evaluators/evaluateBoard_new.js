@@ -1,26 +1,17 @@
 import { getHitMovesNoPromotion } from '../moveGenerators/getHitMovesNoPromotion.js';
 import { getDefenderValues } from '../utils/getDefenderValues.js';
+import { pieceValues } from '../utils/pieceValues.js';
 
-const pieceValues = new Int8Array([0, -1, -3, -3, -5, -9, -64, 0, 0, 1, 3, 3, 5, 9, 64]);
-const positivePieceValues = new Int8Array([0, 1, 3, 3, 5, 9, 64, 0, 0, 1, 3, 3, 5, 9, 64]);
-
-export const getPieceBalance = (board) => {
-  let pieceBalance = 0;
-  for (let index = 0; index <= 63; index += 1) {
-    pieceBalance += pieceValues[board[index]];
-  }
-
-  return pieceBalance << 8;
-};
+const positivePieceValues = pieceValues.map(Math.abs);
 
 export const evaluateBoard = (board) => {
-  // return getPieceBalance(board);
-
   let pieceBalance = 0;
   const attackMap = [];
   const defendMap = [];
 
   const kingCell = board.indexOf(6 + ((board[64] ^ 1) << 3));
+
+  let hitCells;
 
   for (let index = 0; index <= 63; index += 1) {
     if (board[index] === 0) continue;
@@ -30,7 +21,7 @@ export const evaluateBoard = (board) => {
     if (board[index] >>> 3 === board[64]) {
       // piece is color to move, can be attacker
 
-      const hitCells = getHitMovesNoPromotion(board, index);
+      hitCells = getHitMovesNoPromotion(board, index);
       if (hitCells.includes(kingCell)) throw false; // king can be hit, board is illegal
 
       for (const tc of hitCells) {
@@ -54,6 +45,7 @@ export const evaluateBoard = (board) => {
       const thisHitScore = positivePieceValues[board[index]];
       // allHitScore += thisHitScore;
       hitScore = Math.max(hitScore, thisHitScore);
+
       continue cellLoop;
     }
     // cell has protector
@@ -74,6 +66,7 @@ export const evaluateBoard = (board) => {
       // break here, protector will not be used, doesn't worth it
       // allHitScore += thisCellValue;
       hitScore = Math.max(hitScore, thisCellValue);
+
       continue cellLoop;
     }
     // weakest attacker will be hit
@@ -149,5 +142,6 @@ export const evaluateBoard = (board) => {
       hasMoreProtectors = defendMap[index].length !== 0;
     }
   }
-  return (board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore) << 8;
+
+  return board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore; // << 8;
 };

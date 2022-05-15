@@ -1,4 +1,4 @@
-import { getPrediction } from '../tfModels/getPrediction';
+import { getPrediction } from '../tfModels/getPrediction.js';
 
 const MODEL_NAME = 'moves_0.02716-e1-1652296629425';
 
