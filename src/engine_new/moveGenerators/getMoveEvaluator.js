@@ -1,6 +1,6 @@
 import { getPrediction } from '../tfModels/getPrediction.js';
 
-const MODEL_NAME = 'moves_0.02716-e1-1652296629425';
+const MODEL_NAME = 'moves_0.02679-e1-1652876197395';
 
 export const getMoveEvaluator = async (board) => {
   const prediction = await getPrediction({ board, modelName: MODEL_NAME });
