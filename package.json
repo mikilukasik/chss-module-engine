@@ -5,7 +5,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node tests",
+    "asbuild:untouched": "asc src/assembly/index.ts --target debug -b esm",
+    "asbuild:optimized": "asc src/assembly/index.ts --target release -b esm",
+    "asbuild": "npm run asbuild:untouched && npm run asbuild:optimized",
+    "start": "npx serve ."
   },
   "repository": {
     "type": "git",
@@ -18,11 +22,19 @@
   },
   "homepage": "https://github.com/mikilukasik/chss-module-engine#readme",
   "devDependencies": {
+    "assemblyscript": "^0.20.7",
     "babel-preset-env": "^1.7.0",
     "uuid-random": "^1.3.2"
   },
   "dependencies": {
+    "@assemblyscript/loader": "^0.20.7",
     "@tensorflow/tfjs": "^3.17.0",
     "@tensorflow/tfjs-backend-wasm": "^3.17.0"
+  },
+  "exports": {
+    ".": {
+      "import": "./build/release.js",
+      "types": "./build/release.d.ts"
+    }
   }
 }

@@ -1,11 +1,23 @@
 import { getPrediction } from '../tfModels/getPrediction.js';
 import { evaluateBoard } from '../evaluators/evaluateBoard_new.js';
 import { generatePseudoMovesThrowMethod } from '../moveGenerators/generatePseudoMovesThrowMethod.js';
-import { getMovedBoard } from '../utils/getMovedBoard.js';
+import { getWasmEngine } from '../utils/wasmEngine.js';
+// import { getMovedBoard } from '../utils/getMovedBoard.js';
+// import { a } from '../utils/wasmEngine2.js';
 
 const MODEL_NAME = 'champion';
 
+// console.log(instantiate.toString());
+
+// setInterval(() => {
+//   console.log(instantiateSync());
+// }, 1000);
+
 export const minimax = async (board, depth, alpha, beta, valueToAdd, topLevel = true) => {
+  const { getMovedBoard } = await getWasmEngine();
+
+  // console.log('add', add(1, 4));
+
   if (depth === 0) return evaluateBoard(board) + valueToAdd;
 
   if (topLevel) valueToAdd += (await getPrediction({ board, modelName: MODEL_NAME })) * 5;
