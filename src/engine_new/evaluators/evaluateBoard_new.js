@@ -1,8 +1,6 @@
 import { getHitMovesNoPromotion } from '../moveGenerators/getHitMovesNoPromotion.js';
 import { getDefenderValues } from '../utils/getDefenderValues.js';
-import { pieceValues } from '../utils/pieceValues.js';
-
-const positivePieceValues = pieceValues.map(Math.abs);
+import { positivePieceValues, pieceValues } from '../utils/pieceValues.js';
 
 export const evaluateBoard = (board) => {
   let pieceBalance = 0;

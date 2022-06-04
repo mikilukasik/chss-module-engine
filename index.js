@@ -25,7 +25,10 @@ const {
   getRookMoves: getRookMovesWasm,
   getRookHitMoves: getRookHitMovesWasm,
   generatePseudoMoves: generatePseudoMovesWasm,
+  getHitMovesNoPromotion: getHitMovesNoPromotionWasm,
+  getDefenderValues: getDefenderValuesWasm,
   isCaptured: isCapturedWasm,
+  evaluateBoard: evaluateBoardWasm,
   perft: perftWasm,
   typeTest: typeTestWasm,
 } = wasmModule.exports;
@@ -36,8 +39,16 @@ export const generatePseudoMoves = (board) => __getArray(generatePseudoMovesWasm
 
 export const perft = (depth, board) => perftWasm(depth, __newArray(Uint8Array_ID, board));
 
+export const evaluateBoard = (board) => evaluateBoardWasm(__newArray(Uint8Array_ID, board));
+
 export const isCaptured = (board, cellIndex, color) =>
   isCapturedWasm(__newArray(Uint8Array_ID, board), cellIndex, color);
+
+export const getDefenderValues = (board, cellIndex, color) =>
+  __getArray(getDefenderValuesWasm(__newArray(Uint8Array_ID, board), cellIndex, color));
+
+export const getHitMovesNoPromotion = (board, cellIndex) =>
+  __getArray(getHitMovesNoPromotionWasm(__newArray(Uint8Array_ID, board), cellIndex));
 
 export const getPawnMoves = (position, board, isWhite) =>
   __getArray(getPawnMovesWasm(position, __newArray(Uint8Array_ID, board), isWhite));

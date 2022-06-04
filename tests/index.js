@@ -15,6 +15,9 @@ import {
   getRookHitMoves,
   isCaptured,
   generatePseudoMoves,
+  getHitMovesNoPromotion,
+  getDefenderValues,
+  evaluateBoard,
   perft,
   // typeTest,
 } from '../index.js';
@@ -61,6 +64,58 @@ assert.deepStrictEqual(
   1,
 );
 console.log('isCaptured ok');
+
+assert.deepStrictEqual(
+  evaluateBoard([
+    10, 0, 0, 0, 6, 0, 0, 4, 0, 0, 0, 0, 0, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 12, 1, 0, 0,
+  ]),
+  9.5367431640625e-7,
+);
+
+assert.deepStrictEqual(
+  evaluateBoard([
+    0, 0, 0, 0, 6, 0, 0, 4, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 12, 1, 0, 0,
+  ]),
+  5.629999160766602,
+);
+console.log('evaluateBoard ok');
+
+assert.deepStrictEqual(
+  getDefenderValues(
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+    52,
+    0,
+  ),
+  [3.049999952316284, 9.5, 3.3299999237060547, 15],
+);
+console.log('getDefenderValues ok');
+
+assert.deepStrictEqual(
+  getHitMovesNoPromotion(
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 9, 9, 9, 0, 9, 9, 9, 12, 11, 10, 13, 14, 0, 11, 12, 1, 15, 0,
+    ],
+    56,
+  ),
+  [8],
+);
+assert.deepStrictEqual(
+  getHitMovesNoPromotion(
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 0, 9, 9, 9, 0, 9, 9, 9, 12, 11, 10, 13, 14, 0, 11, 12, 1, 15, 0,
+    ],
+    47,
+  ),
+  [11],
+);
+console.log('getHitMovesNoPromotion ok');
 
 assert.deepStrictEqual(
   getPawnMoves(

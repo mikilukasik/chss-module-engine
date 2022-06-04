@@ -14,3 +14,5 @@ export const pieceCharValues = {
 
 // 15 for king val, should not be used, won't get hit
 export const pieceValues = [0, -1, -3.33, -3.05, -5.63, -9.5, -15, 0, 0, 1, 3.33, 3.05, 5.63, 9.5, 15];
+
+export const positivePieceValues = pieceValues.map(Math.abs);

@@ -23,7 +23,7 @@ export declare function getPawnMoves(position: number, board: Uint8Array, color:
  * @param position `i8`
  * @param board `~lib/typedarray/Uint8Array`
  * @param color `u8`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u8>`
  */
 export declare function getPawnHitMovesNoPromotion(position: number, board: Uint8Array, color: number): Array<number>;
 /**
@@ -39,7 +39,7 @@ export declare function getKnightMoves(position: number, board: Uint8Array, colo
  * @param position `i8`
  * @param board `~lib/typedarray/Uint8Array`
  * @param color `u8`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u8>`
  */
 export declare function getKnightHitMoves(position: number, board: Uint8Array, color: number): Array<number>;
 /**
@@ -55,7 +55,7 @@ export declare function getKingMoves(position: number, board: Uint8Array, color?
  * @param position `u8`
  * @param board `~lib/typedarray/Uint8Array`
  * @param color `u8`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u8>`
  */
 export declare function getKingHitMoves(position: number, board: Uint8Array, color?: number): Array<number>;
 /**
@@ -71,7 +71,7 @@ export declare function getQueenMoves(position: number, board: Uint8Array, color
  * @param position `i8`
  * @param board `~lib/typedarray/Uint8Array`
  * @param color `u8`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u8>`
  */
 export declare function getQueenHitMoves(position: number, board: Uint8Array, color: number): Array<number>;
 /**
@@ -87,7 +87,7 @@ export declare function getBishopMoves(position: number, board: Uint8Array, colo
  * @param position `i8`
  * @param board `~lib/typedarray/Uint8Array`
  * @param color `u8`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u8>`
  */
 export declare function getBishopHitMoves(position: number, board: Uint8Array, color: number): Array<number>;
 /**
@@ -103,7 +103,7 @@ export declare function getRookMoves(position: number, board: Uint8Array, color:
  * @param position `i8`
  * @param board `~lib/typedarray/Uint8Array`
  * @param color `u8`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u8>`
  */
 export declare function getRookHitMoves(position: number, board: Uint8Array, color: number): Array<number>;
 /**
@@ -139,3 +139,24 @@ export declare function typeTest(position: number): Array<number>;
  * @returns `~lib/array/Array<u16> | null`
  */
 export declare function generateLegalMoves(board: Uint8Array): Array<number> | null;
+/**
+ * src/assembly/getHitMovesNoPromotion/getHitMovesNoPromotion
+ * @param board `~lib/typedarray/Uint8Array`
+ * @param cellIndex `u8`
+ * @returns `~lib/array/Array<u8>`
+ */
+export declare function getHitMovesNoPromotion(board: Uint8Array, cellIndex: number): Array<number>;
+/**
+ * src/assembly/getDefenderValues/getDefenderValues
+ * @param board `~lib/typedarray/Uint8Array`
+ * @param cellIndex `i8`
+ * @param color `u8`
+ * @returns `~lib/array/Array<f32>`
+ */
+export declare function getDefenderValues(board: Uint8Array, cellIndex: number, color: number): Array<number>;
+/**
+ * src/assembly/evaluateBoard/evaluateBoard
+ * @param board `~lib/typedarray/Uint8Array`
+ * @returns `f32`
+ */
+export declare function evaluateBoard(board: Uint8Array): number;

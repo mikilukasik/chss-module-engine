@@ -1,5 +1,5 @@
-export function getKnightHitMoves(position: i8, board: Uint8Array, color: u8): u16[] {
-  const targets: u16[] = [];
+export function getKnightHitMoves(position: i8, board: Uint8Array, color: u8): u8[] {
+  const targets: u8[] = [];
 
   const rank = position >>> 3;
   const file = position & 7;

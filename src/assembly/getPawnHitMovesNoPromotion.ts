@@ -1,5 +1,5 @@
-export function getPawnHitMovesNoPromotion(position: i8, board: Uint8Array, color: u8): u16[] {
-  const targets: u16[] = [];
+export function getPawnHitMovesNoPromotion(position: i8, board: Uint8Array, color: u8): u8[] {
+  const targets: u8[] = [];
 
   const rank = position >>> 3;
   const file = position & 7;
@@ -8,7 +8,7 @@ export function getPawnHitMovesNoPromotion(position: i8, board: Uint8Array, colo
 
   if (color) {
     if (canHitRight) {
-      const rightHitTarget: u16 = position - 7;
+      const rightHitTarget: u8 = position - 7;
       if (board[rightHitTarget] === 0) {
         if (rank === 3 && board[66] === rightHitTarget) targets[targets.length] = rightHitTarget; // en passant
       } else if (board[rightHitTarget] >>> 3 === 0) {
@@ -17,7 +17,7 @@ export function getPawnHitMovesNoPromotion(position: i8, board: Uint8Array, colo
     }
 
     if (canHitLeft) {
-      const leftHitTarget: u16 = position - 9;
+      const leftHitTarget: u8 = position - 9;
       if (board[leftHitTarget] === 0) {
         // target is empty
         if (rank === 3 && board[66] === leftHitTarget) targets[targets.length] = leftHitTarget; // en passant
@@ -32,7 +32,7 @@ export function getPawnHitMovesNoPromotion(position: i8, board: Uint8Array, colo
   // is black
 
   if (canHitRight) {
-    const rightHitTarget: u16 = position + 9;
+    const rightHitTarget: u8 = position + 9;
     if (board[rightHitTarget] === 0) {
       // target is empty
       if (rank === 4 && board[66] === rightHitTarget) targets[targets.length] = rightHitTarget; // en passant
@@ -42,7 +42,7 @@ export function getPawnHitMovesNoPromotion(position: i8, board: Uint8Array, colo
   }
 
   if (canHitLeft) {
-    const leftHitTarget: u16 = position + 7;
+    const leftHitTarget: u8 = position + 7;
     if (board[leftHitTarget] === 0) {
       if (rank === 4 && board[66] === leftHitTarget) targets[targets.length] = leftHitTarget; // en passant
     } else if (board[leftHitTarget] >>> 3 === 1) {
