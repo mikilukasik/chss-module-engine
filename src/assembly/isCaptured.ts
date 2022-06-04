@@ -1,6 +1,6 @@
 import { getKnightMoves } from '.';
 
-export function isCaptured(board: Int8Array, cellIndex: i8, color: i8): bool {
+export function isCaptured(board: Uint8Array, cellIndex: i8, color: u8): bool {
   const rank = cellIndex >>> 3;
   const file = cellIndex & 7;
 

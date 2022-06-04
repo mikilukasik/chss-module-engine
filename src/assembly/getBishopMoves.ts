@@ -1,5 +1,5 @@
-export function getBishopMoves(position: i8, board: Int8Array, color: i8): u8[] {
-  const targets: u8[] = [];
+export function getBishopMoves(position: i8, board: Uint8Array, color: u8): u16[] {
+  const targets: u16[] = [];
 
   const maxMovesUp = position >>> 3; // equals to rank
   const maxMovesLeft = position & 7; // equals to file

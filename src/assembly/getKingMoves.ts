@@ -1,9 +1,9 @@
 import { isCaptured } from '.';
 
-export function getKingMoves(position: i8, board: Int8Array): u8[] {
-  const targets: u8[] = [];
+export function getKingMoves(position: u8, board: Uint8Array, color: u8 = board[position] >>> 3): u16[] {
+  const targets: u16[] = [];
 
-  const color = board[position] >>> 3;
+  // const color = board[position] >>> 3;
   const rank = position >>> 3; // equals to rank
   const file = position & 7; // equals to file
 

@@ -1,10 +1,10 @@
-export function getQueenMoves(position: i8, board: Int8Array, color: i8): u8[] {
-  const targets: u8[] = [];
+export function getQueenMoves(position: i8, board: Uint8Array, color: u8): u16[] {
+  const targets: u16[] = [];
 
   const maxMovesUp = position >>> 3; // equals to rank
   const maxMovesLeft = position & 7; // equals to file
-  const maxMovesDown = 7 - maxMovesUp;
-  const maxMovesRight = 7 - maxMovesLeft;
+  const maxMovesDown: i8 = 7 - maxMovesUp;
+  const maxMovesRight: i8 = 7 - maxMovesLeft;
 
   const lastCellUpLeft = position - Math.min(maxMovesUp, maxMovesLeft) * 9;
   for (let cellIndex = position - 9; cellIndex >= lastCellUpLeft; cellIndex -= 9) {

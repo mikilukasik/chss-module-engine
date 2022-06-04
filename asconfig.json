@@ -4,7 +4,8 @@
       "outFile": "build/untouched.wasm",
       "textFile": "build/untouched.wat",
       "sourceMap": true,
-      "debug": true
+      "debug": true,
+      "exportRuntime": true
     },
     "release": {
       "outFile": "build/optimized.wasm",

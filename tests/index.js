@@ -8,7 +8,14 @@ import {
   getBishopMoves,
   getRookMoves,
   isCaptured,
+  generatePseudoMoves,
+  perft,
+  // typeTest,
 } from '../index.js';
+import { perftTester } from './perftTester.js';
+
+// console.log(typeTest(0));
+// process.exit(0);
 
 assert.deepStrictEqual(
   getMovedBoard(
@@ -125,3 +132,37 @@ assert.deepStrictEqual(
   [48, 40, 32, 24, 16, 8],
 );
 console.log('getRookMoves ok');
+
+assert.deepStrictEqual(
+  generatePseudoMoves([
+    4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+  ]),
+  [
+    49192, 49184, 50217, 50209, 51242, 51234, 52267, 52259, 53292, 53284, 54317, 54309, 55342, 55334, 56367, 56359,
+    58408, 58410, 63533, 63535,
+  ],
+);
+
+assert.deepStrictEqual(
+  generatePseudoMoves([
+    0, 0, 0, 0, 6, 0, 0, 0, 9, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 14, 0, 0, 0, 1, 0, 0,
+  ]),
+  [8256, 8192, 8128, 8064, 61492, 61491, 61493, 61499, 61501],
+);
+console.log('generatePseudoMoves ok');
+
+assert.deepStrictEqual(
+  perft(
+    4,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 0, 0, 0,
+    ],
+  ),
+  197281,
+);
+console.log('basic perft ok');
+
+assert.deepStrictEqual(perftTester(), { a: 1 });

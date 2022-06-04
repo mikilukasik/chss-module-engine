@@ -1,7 +1,7 @@
-export function getMovedBoard(move: i32, board: Int8Array): Int8Array {
-  const sourceIndex = i8(move >>> 10);
-  const targetIndex = i8(move & 63);
-  const copiedBoard = board.slice(0); //new Int8Array(board);
+export function getMovedBoard(move: u16, board: Uint8Array): Uint8Array {
+  const sourceIndex = u8(move >>> 10);
+  const targetIndex = u8(move & 63);
+  const copiedBoard = board.slice(0); //new Uint8Array(board);
 
   copiedBoard[targetIndex] = copiedBoard[sourceIndex];
   copiedBoard[sourceIndex] = 0;
@@ -20,8 +20,8 @@ export function getMovedBoard(move: i32, board: Int8Array): Int8Array {
       if (sourceIndex - targetIndex === 16) copiedBoard[66] = targetIndex + 8; // white pawn double move, set en passant target
 
       // pawn can become queen
-      if (targetIndex >>> 3 === 0) copiedBoard[targetIndex] = i8(move >>> 6) & 15;
-      if (targetIndex >>> 3 === 7) copiedBoard[targetIndex] = i8(move >>> 6) & 15;
+      if (targetIndex >>> 3 === 0) copiedBoard[targetIndex] = u8(move >>> 6) & 15;
+      if (targetIndex >>> 3 === 7) copiedBoard[targetIndex] = u8(move >>> 6) & 15;
       break;
 
     case 4:
