@@ -2,11 +2,17 @@ import * as assert from 'assert';
 import {
   getMovedBoard,
   getPawnMoves,
+  getPawnHitMovesNoPromotion,
   getKnightMoves,
+  getKnightHitMoves,
   getKingMoves,
+  getKingHitMoves,
   getQueenMoves,
+  getQueenHitMoves,
   getBishopMoves,
+  getBishopHitMoves,
   getRookMoves,
+  getRookHitMoves,
   isCaptured,
   generatePseudoMoves,
   perft,
@@ -82,6 +88,31 @@ assert.deepStrictEqual(
 console.log('getPawnMoves ok');
 
 assert.deepStrictEqual(
+  getPawnHitMovesNoPromotion(
+    50,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+    1,
+  ),
+  [],
+);
+
+assert.deepStrictEqual(
+  getPawnHitMovesNoPromotion(
+    50,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+    true,
+  ),
+  [43],
+);
+console.log('getPawnHitMovesNoPromotion ok');
+
+assert.deepStrictEqual(
   getKnightMoves(
     62,
     [
@@ -95,6 +126,30 @@ assert.deepStrictEqual(
 console.log('getKnightMoves ok');
 
 assert.deepStrictEqual(
+  getKnightHitMoves(
+    62,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+    true,
+  ),
+  [],
+);
+assert.deepStrictEqual(
+  getKnightHitMoves(
+    62,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 1, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+    true,
+  ),
+  [52],
+);
+console.log('getKnightHitMoves ok');
+
+assert.deepStrictEqual(
   getKingMoves(
     60,
     [
@@ -105,6 +160,28 @@ assert.deepStrictEqual(
   [52, 51],
 );
 console.log('getKingMoves ok');
+
+assert.deepStrictEqual(
+  getKingHitMoves(
+    60,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 0, 0, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+  ),
+  [],
+);
+assert.deepStrictEqual(
+  getKingHitMoves(
+    60,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 1, 0, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+  ),
+  [51],
+);
+console.log('getKingHitMoves ok');
 
 assert.deepStrictEqual(
   getQueenMoves(
@@ -120,6 +197,19 @@ assert.deepStrictEqual(
 console.log('getQueenMoves ok');
 
 assert.deepStrictEqual(
+  getQueenHitMoves(
+    59,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 0, 0, 0, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+    true,
+  ),
+  [11],
+);
+console.log('getQueenHitMoves ok');
+
+assert.deepStrictEqual(
   getBishopMoves(
     58,
     [
@@ -133,6 +223,19 @@ assert.deepStrictEqual(
 console.log('getBishopMoves ok');
 
 assert.deepStrictEqual(
+  getBishopHitMoves(
+    47,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 10, 9, 0, 0, 0, 9, 9, 9, 9, 12, 11, 10, 13, 14, 0, 11, 12, 1, 15, 0,
+    ],
+    true,
+  ),
+  [11],
+);
+console.log('getBishopHitMoves ok');
+
+assert.deepStrictEqual(
   getRookMoves(
     56,
     [
@@ -144,6 +247,19 @@ assert.deepStrictEqual(
   [48, 40, 32, 24, 16, 8],
 );
 console.log('getRookMoves ok');
+
+assert.deepStrictEqual(
+  getRookHitMoves(
+    56,
+    [
+      4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 1, 15, 0,
+    ],
+    true,
+  ),
+  [8],
+);
+console.log('getRookHitMoves ok');
 
 assert.deepStrictEqual(
   generatePseudoMoves([

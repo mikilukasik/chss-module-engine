@@ -1,10 +1,16 @@
 export { getMovedBoard } from './getMovedBoard';
 export { getPawnMoves } from './getPawnMoves';
+export { getPawnHitMovesNoPromotion } from './getPawnHitMovesNoPromotion';
 export { getKnightMoves } from './getKnightMoves';
+export { getKnightHitMoves } from './getKnightHitMoves';
 export { getKingMoves } from './getKingMoves';
+export { getKingHitMoves } from './getKingHitMoves';
 export { getQueenMoves } from './getQueenMoves';
+export { getQueenHitMoves } from './getQueenHitMoves';
 export { getBishopMoves } from './getBishopMoves';
+export { getBishopHitMoves } from './getBishopHitMoves';
 export { getRookMoves } from './getRookMoves';
+export { getRookHitMoves } from './getRookHitMoves';
 export { isCaptured } from './isCaptured';
 export { generatePseudoMoves } from './generatePseudoMoves';
 export { perft } from './perft';

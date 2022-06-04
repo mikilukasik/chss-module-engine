@@ -34,10 +34,20 @@ async function instantiate(module, imports = {}) {
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getPawnMoves(position, board, color) >>> 0);
     },
+    getPawnHitMovesNoPromotion(position, board, color) {
+      // src/assembly/getPawnHitMovesNoPromotion/getPawnHitMovesNoPromotion(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
+      board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
+      return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getPawnHitMovesNoPromotion(position, board, color) >>> 0);
+    },
     getKnightMoves(position, board, color) {
       // src/assembly/getKnightMoves/getKnightMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getKnightMoves(position, board, color) >>> 0);
+    },
+    getKnightHitMoves(position, board, color) {
+      // src/assembly/getKnightHitMoves/getKnightHitMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
+      board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
+      return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getKnightHitMoves(position, board, color) >>> 0);
     },
     getKingMoves(position, board, color) {
       // src/assembly/getKingMoves/getKingMoves(u8, ~lib/typedarray/Uint8Array, u8?) => ~lib/array/Array<u16>
@@ -45,20 +55,41 @@ async function instantiate(module, imports = {}) {
       exports.__setArgumentsLength(arguments.length);
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getKingMoves(position, board, color) >>> 0);
     },
+    getKingHitMoves(position, board, color) {
+      // src/assembly/getKingHitMoves/getKingHitMoves(u8, ~lib/typedarray/Uint8Array, u8?) => ~lib/array/Array<u16>
+      board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
+      exports.__setArgumentsLength(arguments.length);
+      return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getKingHitMoves(position, board, color) >>> 0);
+    },
     getQueenMoves(position, board, color) {
       // src/assembly/getQueenMoves/getQueenMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getQueenMoves(position, board, color) >>> 0);
+    },
+    getQueenHitMoves(position, board, color) {
+      // src/assembly/getQueenHitMoves/getQueenHitMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
+      board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
+      return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getQueenHitMoves(position, board, color) >>> 0);
     },
     getBishopMoves(position, board, color) {
       // src/assembly/getBishopMoves/getBishopMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getBishopMoves(position, board, color) >>> 0);
     },
+    getBishopHitMoves(position, board, color) {
+      // src/assembly/getBishopHitMoves/getBishopHitMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
+      board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
+      return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getBishopHitMoves(position, board, color) >>> 0);
+    },
     getRookMoves(position, board, color) {
       // src/assembly/getRookMoves/getRookMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getRookMoves(position, board, color) >>> 0);
+    },
+    getRookHitMoves(position, board, color) {
+      // src/assembly/getRookHitMoves/getRookHitMoves(i8, ~lib/typedarray/Uint8Array, u8) => ~lib/array/Array<u16>
+      board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
+      return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.getRookHitMoves(position, board, color) >>> 0);
     },
     isCaptured(board, cellIndex, color) {
       // src/assembly/isCaptured/isCaptured(~lib/typedarray/Uint8Array, i8, u8) => bool
@@ -138,11 +169,17 @@ export const {
   Uint8Array_ID,
   getMovedBoard,
   getPawnMoves,
+  getPawnHitMovesNoPromotion,
   getKnightMoves,
+  getKnightHitMoves,
   getKingMoves,
+  getKingHitMoves,
   getQueenMoves,
+  getQueenHitMoves,
   getBishopMoves,
+  getBishopHitMoves,
   getRookMoves,
+  getRookHitMoves,
   isCaptured,
   generatePseudoMoves,
   perft,
