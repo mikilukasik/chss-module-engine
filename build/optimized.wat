@@ -3372,7 +3372,6 @@
    i32.const 2912
    i32.store
    local.get $4
-   f64.promote_f32
    i32.const 2912
    local.get $0
    local.get $3
@@ -3382,13 +3381,18 @@
    call $~lib/array/Array<u8>#__get
    call $~lib/typedarray/Uint8Array#__get
    call $~lib/array/Array<f32>#__get
-   f64.promote_f32
-   f64.max
-   f32.demote_f64
+   local.tee $6
+   f32.lt
+   i32.eqz
+   if
+    local.get $4
+    local.set $6
+   end
    global.get $~lib/memory/__stack_pointer
    i32.const 8
    i32.add
    global.set $~lib/memory/__stack_pointer
+   local.get $6
    return
   end
   global.get $~lib/memory/__stack_pointer
@@ -3499,12 +3503,12 @@
    i32.const 8
    i32.add
    global.set $~lib/memory/__stack_pointer
-   local.get $4
-   f64.promote_f32
    local.get $6
-   f64.promote_f32
-   f64.max
-   f32.demote_f64
+   local.get $4
+   local.get $4
+   local.get $6
+   f32.lt
+   select
    return
   end
   local.get $6
@@ -3636,16 +3640,15 @@
      i32.const 8
      i32.add
      global.set $~lib/memory/__stack_pointer
-     local.get $4
-     f64.promote_f32
      local.get $6
-     f64.promote_f32
-     f64.max
-     f32.demote_f64
      local.get $4
+     local.get $4
+     local.get $6
+     f32.lt
      local.get $6
      f32.const 0
      f32.gt
+     i32.and
      select
     end
    end
@@ -3655,16 +3658,15 @@
   i32.const 8
   i32.add
   global.set $~lib/memory/__stack_pointer
-  local.get $4
-  f64.promote_f32
   local.get $6
-  f64.promote_f32
-  f64.max
-  f32.demote_f64
   local.get $4
+  local.get $4
+  local.get $6
+  f32.lt
   local.get $6
   f32.const 0
   f32.gt
+  i32.and
   select
  )
  (func $src/assembly/generatePseudoMoves/generatePseudoMoves (param $0 i32) (result i32)

@@ -5046,11 +5046,9 @@
   (local $9 i32)
   (local $10 i32)
   (local $11 f32)
-  (local $12 f64)
-  (local $13 f64)
-  (local $14 i32)
-  (local $15 i32)
-  (local $16 f32)
+  (local $12 i32)
+  (local $13 i32)
+  (local $14 f32)
   global.get $~lib/memory/__stack_pointer
   i32.const 8
   i32.sub
@@ -5068,21 +5066,21 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#get:length
   i32.const 0
   i32.eq
   if
    global.get $src/assembly/evaluateBoard/positivePieceValues
-   local.set $15
+   local.set $13
    global.get $~lib/memory/__stack_pointer
-   local.get $15
+   local.get $13
    i32.store
-   local.get $15
+   local.get $13
    local.get $0
    local.get $3
    local.get $5
@@ -5092,33 +5090,29 @@
    call $~lib/typedarray/Uint8Array#__get
    call $~lib/array/Array<f32>#__get
    local.set $11
-   local.get $4
-   f64.promote_f32
-   local.set $13
    local.get $11
-   f64.promote_f32
-   local.set $12
-   local.get $13
-   local.get $12
-   f64.max
-   f32.demote_f64
-   local.set $4
    local.get $4
-   local.set $16
+   f32.gt
+   if
+    local.get $11
+    local.set $4
+   end
+   local.get $4
+   local.set $14
    global.get $~lib/memory/__stack_pointer
    i32.const 8
    i32.add
    global.set $~lib/memory/__stack_pointer
-   local.get $16
+   local.get $14
    return
   end
   local.get $6
   global.get $src/assembly/evaluateBoard/positivePieceValues
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   local.get $0
   local.get $3
   local.get $5
@@ -5136,17 +5130,17 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   i32.const 2048
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store offset=4
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#sort
   drop
   local.get $1
@@ -5156,11 +5150,11 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#pop
   local.set $8
   local.get $2
@@ -5170,17 +5164,17 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   i32.const 2128
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store offset=4
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#sort
   drop
   local.get $2
@@ -5190,11 +5184,11 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#pop
   local.set $7
   local.get $1
@@ -5204,11 +5198,11 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#get:length
   i32.const 0
   i32.ne
@@ -5222,24 +5216,20 @@
    i32.const 0
   end
   if
-   local.get $4
-   f64.promote_f32
-   local.set $13
    local.get $6
-   f64.promote_f32
-   local.set $12
-   local.get $13
-   local.get $12
-   f64.max
-   f32.demote_f64
-   local.set $4
    local.get $4
-   local.set $16
+   f32.gt
+   if
+    local.get $6
+    local.set $4
+   end
+   local.get $4
+   local.set $14
    global.get $~lib/memory/__stack_pointer
    i32.const 8
    i32.add
    global.set $~lib/memory/__stack_pointer
-   local.get $16
+   local.get $14
    return
   end
   local.get $6
@@ -5253,25 +5243,21 @@
    f32.const 0
    f32.gt
    if
-    local.get $4
-    f64.promote_f32
-    local.set $13
     local.get $6
-    f64.promote_f32
-    local.set $12
-    local.get $13
-    local.get $12
-    f64.max
-    f32.demote_f64
-    local.set $4
+    local.get $4
+    f32.gt
+    if
+     local.get $6
+     local.set $4
+    end
    end
    local.get $4
-   local.set $16
+   local.set $14
    global.get $~lib/memory/__stack_pointer
    i32.const 8
    i32.add
    global.set $~lib/memory/__stack_pointer
-   local.get $16
+   local.get $14
    return
   end
   local.get $1
@@ -5281,11 +5267,11 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#pop
   local.set $8
   local.get $2
@@ -5295,19 +5281,19 @@
   i32.and
   call $~lib/array/Array<u8>#__get
   call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-  local.set $15
+  local.set $13
   global.get $~lib/memory/__stack_pointer
-  local.get $15
+  local.get $13
   i32.store
-  local.get $15
+  local.get $13
   call $~lib/array/Array<f32>#get:length
   i32.const 0
   i32.ne
   local.set $10
   loop $while-continue|0
    i32.const 1
-   local.set $14
-   local.get $14
+   local.set $12
+   local.get $12
    if
     local.get $10
     if (result i32)
@@ -5322,25 +5308,21 @@
      f32.const 0
      f32.gt
      if
-      local.get $4
-      f64.promote_f32
-      local.set $13
       local.get $6
-      f64.promote_f32
-      local.set $12
-      local.get $13
-      local.get $12
-      f64.max
-      f32.demote_f64
-      local.set $4
+      local.get $4
+      f32.gt
+      if
+       local.get $6
+       local.set $4
+      end
      end
      local.get $4
-     local.set $16
+     local.set $14
      global.get $~lib/memory/__stack_pointer
      i32.const 8
      i32.add
      global.set $~lib/memory/__stack_pointer
-     local.get $16
+     local.get $14
      return
     end
     local.get $6
@@ -5354,25 +5336,21 @@
      f32.const 0
      f32.gt
      if
-      local.get $4
-      f64.promote_f32
-      local.set $13
       local.get $6
-      f64.promote_f32
-      local.set $12
-      local.get $13
-      local.get $12
-      f64.max
-      f32.demote_f64
-      local.set $4
+      local.get $4
+      f32.gt
+      if
+       local.get $6
+       local.set $4
+      end
      end
      local.get $4
-     local.set $16
+     local.set $14
      global.get $~lib/memory/__stack_pointer
      i32.const 8
      i32.add
      global.set $~lib/memory/__stack_pointer
-     local.get $16
+     local.get $14
      return
     end
     local.get $2
@@ -5382,11 +5360,11 @@
     i32.and
     call $~lib/array/Array<u8>#__get
     call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-    local.set $15
+    local.set $13
     global.get $~lib/memory/__stack_pointer
-    local.get $15
+    local.get $13
     i32.store
-    local.get $15
+    local.get $13
     call $~lib/array/Array<f32>#pop
     local.set $7
     local.get $1
@@ -5396,11 +5374,11 @@
     i32.and
     call $~lib/array/Array<u8>#__get
     call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-    local.set $15
+    local.set $13
     global.get $~lib/memory/__stack_pointer
-    local.get $15
+    local.get $13
     i32.store
-    local.get $15
+    local.get $13
     call $~lib/array/Array<f32>#get:length
     i32.const 0
     i32.ne
@@ -5418,25 +5396,21 @@
      f32.const 0
      f32.gt
      if
-      local.get $4
-      f64.promote_f32
-      local.set $13
       local.get $6
-      f64.promote_f32
-      local.set $12
-      local.get $13
-      local.get $12
-      f64.max
-      f32.demote_f64
-      local.set $4
+      local.get $4
+      f32.gt
+      if
+       local.get $6
+       local.set $4
+      end
      end
      local.get $4
-     local.set $16
+     local.set $14
      global.get $~lib/memory/__stack_pointer
      i32.const 8
      i32.add
      global.set $~lib/memory/__stack_pointer
-     local.get $16
+     local.get $14
      return
     end
     local.get $6
@@ -5450,25 +5424,21 @@
      f32.const 0
      f32.gt
      if
-      local.get $4
-      f64.promote_f32
-      local.set $13
       local.get $6
-      f64.promote_f32
-      local.set $12
-      local.get $13
-      local.get $12
-      f64.max
-      f32.demote_f64
-      local.set $4
+      local.get $4
+      f32.gt
+      if
+       local.get $6
+       local.set $4
+      end
      end
      local.get $4
-     local.set $16
+     local.set $14
      global.get $~lib/memory/__stack_pointer
      i32.const 8
      i32.add
      global.set $~lib/memory/__stack_pointer
-     local.get $16
+     local.get $14
      return
     end
     local.get $1
@@ -5478,11 +5448,11 @@
     i32.and
     call $~lib/array/Array<u8>#__get
     call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-    local.set $15
+    local.set $13
     global.get $~lib/memory/__stack_pointer
-    local.get $15
+    local.get $13
     i32.store
-    local.get $15
+    local.get $13
     call $~lib/array/Array<f32>#pop
     local.set $8
     local.get $2
@@ -5492,11 +5462,11 @@
     i32.and
     call $~lib/array/Array<u8>#__get
     call $~lib/map/Map<u8,~lib/array/Array<f32>>#get
-    local.set $15
+    local.set $13
     global.get $~lib/memory/__stack_pointer
-    local.get $15
+    local.get $13
     i32.store
-    local.get $15
+    local.get $13
     call $~lib/array/Array<f32>#get:length
     i32.const 0
     i32.ne

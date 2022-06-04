@@ -21,7 +21,7 @@ const cellLoop = (
     // this cell can be hit, add value and check next cell
     const thisHitScore: f32 = positivePieceValues[board[attackedIndexes[i]]];
     // allHitScore += thisHitScore;
-    hitScore = f32(Math.max(hitScore, thisHitScore));
+    if (thisHitScore > hitScore) hitScore = thisHitScore;
 
     return hitScore;
   }
@@ -50,7 +50,7 @@ const cellLoop = (
   ) {
     // break here, protector will not be used, doesn't worth it
     // allHitScore += thisCellValue;
-    hitScore = f32(Math.max(hitScore, thisCellValue));
+    if (thisCellValue > hitScore) hitScore = thisCellValue;
 
     return hitScore;
   }
@@ -62,7 +62,7 @@ const cellLoop = (
     // no more attackers
     if (thisCellValue > 0) {
       // allHitScore += thisCellValue;
-      hitScore = f32(Math.max(hitScore, thisCellValue));
+      if (thisCellValue > hitScore) hitScore = thisCellValue;
     } //hitScore += thisCellValue; // add cellvalue if worth to hit
     return hitScore;
   }
@@ -76,7 +76,7 @@ const cellLoop = (
       if (thisCellValue > 0) {
         // add cellvalue if worth to hit
         // // allHitScore += thisCellValue;
-        hitScore = f32(Math.max(hitScore, thisCellValue));
+        if (thisCellValue > hitScore) hitScore = thisCellValue;
       }
       return hitScore;
     }
@@ -90,7 +90,7 @@ const cellLoop = (
       if (thisCellValue > 0) {
         // add cellvalue if worth to hit
         // // allHitScore += thisCellValue;
-        hitScore = f32(Math.max(hitScore, thisCellValue));
+        if (thisCellValue > hitScore) hitScore = thisCellValue;
       }
       return hitScore;
     }
@@ -104,7 +104,7 @@ const cellLoop = (
       if (thisCellValue > 0) {
         // add cellvalue if worth to hit
         // allHitScore += thisCellValue;
-        hitScore = f32(Math.max(hitScore, thisCellValue));
+        if (thisCellValue > hitScore) hitScore = thisCellValue;
       }
       return hitScore;
     }
@@ -117,7 +117,7 @@ const cellLoop = (
       if (thisCellValue > 0) {
         // add cellvalue if worth to hit
         // allHitScore += thisCellValue;
-        hitScore = f32(Math.max(hitScore, thisCellValue));
+        if (thisCellValue > hitScore) hitScore = thisCellValue;
       }
       return hitScore;
     }
