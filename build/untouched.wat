@@ -29,10 +29,10 @@
  (global $src/assembly/index/Uint8Array_ID i32 (i32.const 3))
  (global $~lib/builtins/i32.MAX_VALUE i32 (i32.const 2147483647))
  (global $~argumentsLength (mut i32) (i32.const 0))
- (global $~lib/rt/__rtti_base i32 (i32.const 1632))
- (global $~lib/memory/__data_end i32 (i32.const 1708))
- (global $~lib/memory/__stack_pointer (mut i32) (i32.const 18092))
- (global $~lib/memory/__heap_base i32 (i32.const 18092))
+ (global $~lib/rt/__rtti_base i32 (i32.const 1680))
+ (global $~lib/memory/__data_end i32 (i32.const 1756))
+ (global $~lib/memory/__stack_pointer (mut i32) (i32.const 18140))
+ (global $~lib/memory/__heap_base i32 (i32.const 18140))
  (memory $0 1)
  (data (i32.const 12) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (data (i32.const 44) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00A\00l\00l\00o\00c\00a\00t\00i\00o\00n\00 \00t\00o\00o\00 \00l\00a\00r\00g\00e\00\00\00\00\00")
@@ -65,11 +65,11 @@
  (data (i32.const 1180) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (data (i32.const 1212) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (data (i32.const 1244) "|\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00^\00\00\00E\00l\00e\00m\00e\00n\00t\00 \00t\00y\00p\00e\00 \00m\00u\00s\00t\00 \00b\00e\00 \00n\00u\00l\00l\00a\00b\00l\00e\00 \00i\00f\00 \00a\00r\00r\00a\00y\00 \00i\00s\00 \00h\00o\00l\00e\00y\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 1372) "\\\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00F\00\00\00s\00r\00c\00/\00a\00s\00s\00e\00m\00b\00l\00y\00/\00g\00e\00n\00e\00r\00a\00t\00e\00P\00s\00e\00u\00d\00o\00M\00o\00v\00e\00s\00.\00t\00s\00\00\00\00\00\00\00")
- (data (i32.const 1468) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
- (data (i32.const 1500) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00O\00b\00j\00e\00c\00t\00 \00a\00l\00r\00e\00a\00d\00y\00 \00p\00i\00n\00n\00e\00d\00\00\00")
- (data (i32.const 1564) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00O\00b\00j\00e\00c\00t\00 \00i\00s\00 \00n\00o\00t\00 \00p\00i\00n\00n\00e\00d\00\00\00\00\00")
- (data (i32.const 1632) "\t\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00\00\00\00\00\00\00\00\00A\00\00\00\02\00\00\00\82\00\00\00\00\00\00\00\02A\00\00\00\00\00\00\02\t\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 1372) "\1c\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
+ (data (i32.const 1404) "\8c\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00|\00\00\00S\00o\00m\00t\00h\00i\00n\00g\00\'\00s\00 \00w\00r\00o\00n\00g\00,\00 \00i\00l\00l\00e\00g\00a\00l\00 \00b\00o\00a\00r\00d\00 \00w\00h\00i\00l\00e\00 \00u\00s\00i\00n\00g\00 \00g\00e\00n\00e\00r\00a\00t\00e\00L\00e\00g\00a\00l\00M\00o\00v\00e\00s\00")
+ (data (i32.const 1548) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00*\00\00\00O\00b\00j\00e\00c\00t\00 \00a\00l\00r\00e\00a\00d\00y\00 \00p\00i\00n\00n\00e\00d\00\00\00")
+ (data (i32.const 1612) "<\00\00\00\00\00\00\00\00\00\00\00\01\00\00\00(\00\00\00O\00b\00j\00e\00c\00t\00 \00i\00s\00 \00n\00o\00t\00 \00p\00i\00n\00n\00e\00d\00\00\00\00\00")
+ (data (i32.const 1680) "\t\00\00\00 \00\00\00\00\00\00\00 \00\00\00\00\00\00\00\00\00\00\00\00\00\00\00A\00\00\00\02\00\00\00\82\00\00\00\00\00\00\00\02A\00\00\00\00\00\00\02\t\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00\00")
  (table $0 8 8 funcref)
  (elem $0 (i32.const 1) $start:src/assembly/generatePseudoMoves~anonymous|0 $src/assembly/getPawnMoves/getPawnMoves $src/assembly/getBishopMoves/getBishopMoves $src/assembly/getKnightMoves/getKnightMoves $src/assembly/getRookMoves/getRookMoves $src/assembly/getQueenMoves/getQueenMoves $src/assembly/getKingMoves/getKingMoves@varargs)
  (export "Uint8Array_ID" (global $src/assembly/index/Uint8Array_ID))
@@ -2715,7 +2715,7 @@
    i32.const 3
    i32.eq
    if
-    i32.const 1520
+    i32.const 1568
     i32.const 128
     i32.const 337
     i32.const 7
@@ -2747,7 +2747,7 @@
   i32.const 3
   i32.ne
   if
-   i32.const 1584
+   i32.const 1632
    i32.const 128
    i32.const 351
    i32.const 5
@@ -2834,10 +2834,10 @@
   i32.const 64
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 1520
+  i32.const 1568
   local.get $0
   call $~lib/rt/itcms/__visit
-  i32.const 1584
+  i32.const 1632
   local.get $0
   call $~lib/rt/itcms/__visit
   global.get $src/assembly/generatePseudoMoves/moveGenerators
@@ -3032,8 +3032,8 @@
   global.get $~lib/memory/__data_end
   i32.lt_s
   if
-   i32.const 18112
    i32.const 18160
+   i32.const 18208
    i32.const 1
    i32.const 1
    call $~lib/builtins/abort
@@ -3207,11 +3207,13 @@
          i32.eq
          if
           i32.const 0
-          i32.const 1392
-          i32.const 28
-          i32.const 44
-          call $~lib/builtins/abort
-          unreachable
+          local.set $13
+          global.get $~lib/memory/__stack_pointer
+          i32.const 20
+          i32.add
+          global.set $~lib/memory/__stack_pointer
+          local.get $13
+          return
          end
          local.get $3
          local.get $3
@@ -3281,7 +3283,7 @@
   (local $6 i32)
   (local $7 i32)
   global.get $~lib/memory/__stack_pointer
-  i32.const 8
+  i32.const 12
   i32.sub
   global.set $~lib/memory/__stack_pointer
   call $~stack_check
@@ -3289,67 +3291,91 @@
   i64.const 0
   i64.store
   global.get $~lib/memory/__stack_pointer
+  i32.const 0
+  i32.store offset=8
+  global.get $~lib/memory/__stack_pointer
   local.get $1
   call $src/assembly/generateLegalMoves/generateLegalMoves
   local.tee $2
   i32.store
-  local.get $0
-  i32.extend8_s
-  i32.const 1
-  i32.eq
+  local.get $2
   if
+   local.get $0
+   i32.extend8_s
+   i32.const 1
+   i32.eq
+   if
+    local.get $2
+    call $~lib/array/Array<u16>#get:length
+    local.set $7
+    global.get $~lib/memory/__stack_pointer
+    i32.const 12
+    i32.add
+    global.set $~lib/memory/__stack_pointer
+    local.get $7
+    return
+   end
+   i32.const 0
+   local.set $3
+   i32.const 0
+   local.set $4
    local.get $2
    call $~lib/array/Array<u16>#get:length
+   local.set $5
+   loop $for-loop|0
+    local.get $4
+    local.get $5
+    i32.lt_s
+    local.set $6
+    local.get $6
+    if
+     local.get $3
+     local.get $0
+     i32.const 1
+     i32.sub
+     local.get $2
+     local.get $4
+     call $~lib/array/Array<u16>#__get
+     local.get $1
+     call $src/assembly/getMovedBoard/getMovedBoard
+     local.set $7
+     global.get $~lib/memory/__stack_pointer
+     local.get $7
+     i32.store offset=4
+     local.get $7
+     call $src/assembly/perft/perft
+     i32.add
+     local.set $3
+     local.get $4
+     i32.const 1
+     i32.add
+     local.set $4
+     br $for-loop|0
+    end
+   end
+   local.get $3
    local.set $7
    global.get $~lib/memory/__stack_pointer
-   i32.const 8
+   i32.const 12
    i32.add
    global.set $~lib/memory/__stack_pointer
    local.get $7
    return
   end
-  i32.const 0
-  local.set $3
-  i32.const 0
-  local.set $4
-  local.get $2
-  call $~lib/array/Array<u16>#get:length
-  local.set $5
-  loop $for-loop|0
-   local.get $4
-   local.get $5
-   i32.lt_s
-   local.set $6
-   local.get $6
-   if
-    local.get $3
-    local.get $0
-    i32.const 1
-    i32.sub
-    local.get $2
-    local.get $4
-    call $~lib/array/Array<u16>#__get
-    local.get $1
-    call $src/assembly/getMovedBoard/getMovedBoard
-    local.set $7
-    global.get $~lib/memory/__stack_pointer
-    local.get $7
-    i32.store offset=4
-    local.get $7
-    call $src/assembly/perft/perft
-    i32.add
-    local.set $3
-    local.get $4
-    i32.const 1
-    i32.add
-    local.set $4
-    br $for-loop|0
-   end
-  end
-  local.get $3
+  i32.const 1424
   local.set $7
   global.get $~lib/memory/__stack_pointer
-  i32.const 8
+  local.get $7
+  i32.store offset=8
+  local.get $7
+  i32.const 0
+  i32.const 0
+  i32.const 0
+  call $~lib/builtins/abort
+  i32.const 0
+  local.set $7
+  global.get $~lib/memory/__stack_pointer
+  i32.const 12
   i32.add
   global.set $~lib/memory/__stack_pointer
   local.get $7
@@ -3457,10 +3483,12 @@
    local.get $0
    i32.const 8
    i32.sub
+   i32.extend8_s
    local.set $8
    local.get $1
    local.get $8
-   i32.extend8_s
+   i32.const 65535
+   i32.and
    call $~lib/typedarray/Uint8Array#__get
    i32.const 0
    i32.eq
@@ -3476,11 +3504,10 @@
      local.get $8
      i32.const 13
      i32.const 6
-     i32.const 7
+     i32.const 15
      i32.and
      i32.shl
      i32.add
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
      local.get $4
      local.get $4
@@ -3488,11 +3515,10 @@
      local.get $8
      i32.const 12
      i32.const 6
-     i32.const 7
+     i32.const 15
      i32.and
      i32.shl
      i32.add
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
      local.get $4
      local.get $4
@@ -3500,11 +3526,10 @@
      local.get $8
      i32.const 11
      i32.const 6
-     i32.const 7
+     i32.const 15
      i32.and
      i32.shl
      i32.add
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
      local.get $4
      local.get $4
@@ -3512,18 +3537,16 @@
      local.get $8
      i32.const 10
      i32.const 6
-     i32.const 7
+     i32.const 15
      i32.and
      i32.shl
      i32.add
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
     else
      local.get $4
      local.get $4
      call $~lib/array/Array<u16>#get:length
      local.get $8
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
     end
     local.get $3
@@ -3534,10 +3557,12 @@
      local.get $0
      i32.const 16
      i32.sub
+     i32.extend8_s
      local.set $9
      local.get $1
      local.get $9
-     i32.extend8_s
+     i32.const 65535
+     i32.and
      call $~lib/typedarray/Uint8Array#__get
      i32.const 0
      i32.eq
@@ -3546,7 +3571,6 @@
       local.get $4
       call $~lib/array/Array<u16>#get:length
       local.get $9
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
      end
     end
@@ -3556,10 +3580,12 @@
     local.get $0
     i32.const 7
     i32.sub
+    i32.extend8_s
     local.set $9
     local.get $1
     local.get $9
-    i32.extend8_s
+    i32.const 65535
+    i32.and
     call $~lib/typedarray/Uint8Array#__get
     i32.const 0
     i32.eq
@@ -3573,7 +3599,7 @@
       i32.const 66
       call $~lib/typedarray/Uint8Array#__get
       local.get $9
-      i32.const 255
+      i32.const 65535
       i32.and
       i32.eq
      else
@@ -3584,13 +3610,13 @@
       local.get $4
       call $~lib/array/Array<u16>#get:length
       local.get $9
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
      end
     else
      local.get $1
      local.get $9
-     i32.extend8_s
+     i32.const 65535
+     i32.and
      call $~lib/typedarray/Uint8Array#__get
      i32.const 3
      i32.const 7
@@ -3610,11 +3636,10 @@
        local.get $9
        i32.const 13
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
        local.get $4
        local.get $4
@@ -3622,11 +3647,10 @@
        local.get $9
        i32.const 12
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
        local.get $4
        local.get $4
@@ -3634,11 +3658,10 @@
        local.get $9
        i32.const 11
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
        local.get $4
        local.get $4
@@ -3646,18 +3669,16 @@
        local.get $9
        i32.const 10
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
       else
        local.get $4
        local.get $4
        call $~lib/array/Array<u16>#get:length
        local.get $9
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
       end
      end
@@ -3668,10 +3689,12 @@
     local.get $0
     i32.const 9
     i32.sub
+    i32.extend8_s
     local.set $9
     local.get $1
     local.get $9
-    i32.extend8_s
+    i32.const 65535
+    i32.and
     call $~lib/typedarray/Uint8Array#__get
     i32.const 0
     i32.eq
@@ -3685,7 +3708,7 @@
       i32.const 66
       call $~lib/typedarray/Uint8Array#__get
       local.get $9
-      i32.const 255
+      i32.const 65535
       i32.and
       i32.eq
      else
@@ -3696,13 +3719,13 @@
       local.get $4
       call $~lib/array/Array<u16>#get:length
       local.get $9
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
      end
     else
      local.get $1
      local.get $9
-     i32.extend8_s
+     i32.const 65535
+     i32.and
      call $~lib/typedarray/Uint8Array#__get
      i32.const 3
      i32.const 7
@@ -3722,11 +3745,10 @@
        local.get $9
        i32.const 13
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
        local.get $4
        local.get $4
@@ -3734,11 +3756,10 @@
        local.get $9
        i32.const 12
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
        local.get $4
        local.get $4
@@ -3746,11 +3767,10 @@
        local.get $9
        i32.const 11
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
        local.get $4
        local.get $4
@@ -3758,18 +3778,16 @@
        local.get $9
        i32.const 10
        i32.const 6
-       i32.const 7
+       i32.const 15
        i32.and
        i32.shl
        i32.add
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
       else
        local.get $4
        local.get $4
        call $~lib/array/Array<u16>#get:length
        local.get $9
-       i32.extend8_s
        call $~lib/array/Array<u16>#__set
       end
      end
@@ -3787,10 +3805,12 @@
   local.get $0
   i32.const 8
   i32.add
+  i32.extend8_s
   local.set $8
   local.get $1
   local.get $8
-  i32.extend8_s
+  i32.const 65535
+  i32.and
   call $~lib/typedarray/Uint8Array#__get
   i32.const 0
   i32.eq
@@ -3806,11 +3826,10 @@
     local.get $8
     i32.const 5
     i32.const 6
-    i32.const 7
+    i32.const 15
     i32.and
     i32.shl
     i32.add
-    i32.extend8_s
     call $~lib/array/Array<u16>#__set
     local.get $4
     local.get $4
@@ -3818,11 +3837,10 @@
     local.get $8
     i32.const 4
     i32.const 6
-    i32.const 7
+    i32.const 15
     i32.and
     i32.shl
     i32.add
-    i32.extend8_s
     call $~lib/array/Array<u16>#__set
     local.get $4
     local.get $4
@@ -3830,11 +3848,10 @@
     local.get $8
     i32.const 3
     i32.const 6
-    i32.const 7
+    i32.const 15
     i32.and
     i32.shl
     i32.add
-    i32.extend8_s
     call $~lib/array/Array<u16>#__set
     local.get $4
     local.get $4
@@ -3842,18 +3859,16 @@
     local.get $8
     i32.const 2
     i32.const 6
-    i32.const 7
+    i32.const 15
     i32.and
     i32.shl
     i32.add
-    i32.extend8_s
     call $~lib/array/Array<u16>#__set
    else
     local.get $4
     local.get $4
     call $~lib/array/Array<u16>#get:length
     local.get $8
-    i32.extend8_s
     call $~lib/array/Array<u16>#__set
    end
    local.get $3
@@ -3864,10 +3879,12 @@
     local.get $0
     i32.const 16
     i32.add
+    i32.extend8_s
     local.set $9
     local.get $1
     local.get $9
-    i32.extend8_s
+    i32.const 65535
+    i32.and
     call $~lib/typedarray/Uint8Array#__get
     i32.const 0
     i32.eq
@@ -3876,7 +3893,6 @@
      local.get $4
      call $~lib/array/Array<u16>#get:length
      local.get $9
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
     end
    end
@@ -3886,10 +3902,12 @@
    local.get $0
    i32.const 9
    i32.add
+   i32.extend8_s
    local.set $9
    local.get $1
    local.get $9
-   i32.extend8_s
+   i32.const 65535
+   i32.and
    call $~lib/typedarray/Uint8Array#__get
    i32.const 0
    i32.eq
@@ -3903,7 +3921,7 @@
      i32.const 66
      call $~lib/typedarray/Uint8Array#__get
      local.get $9
-     i32.const 255
+     i32.const 65535
      i32.and
      i32.eq
     else
@@ -3914,13 +3932,13 @@
      local.get $4
      call $~lib/array/Array<u16>#get:length
      local.get $9
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
     end
    else
     local.get $1
     local.get $9
-    i32.extend8_s
+    i32.const 65535
+    i32.and
     call $~lib/typedarray/Uint8Array#__get
     i32.const 3
     i32.const 7
@@ -3940,11 +3958,10 @@
       local.get $9
       i32.const 5
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
       local.get $4
       local.get $4
@@ -3952,11 +3969,10 @@
       local.get $9
       i32.const 4
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
       local.get $4
       local.get $4
@@ -3964,11 +3980,10 @@
       local.get $9
       i32.const 3
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
       local.get $4
       local.get $4
@@ -3976,18 +3991,16 @@
       local.get $9
       i32.const 2
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
      else
       local.get $4
       local.get $4
       call $~lib/array/Array<u16>#get:length
       local.get $9
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
      end
     end
@@ -3998,10 +4011,12 @@
    local.get $0
    i32.const 7
    i32.add
+   i32.extend8_s
    local.set $9
    local.get $1
    local.get $9
-   i32.extend8_s
+   i32.const 65535
+   i32.and
    call $~lib/typedarray/Uint8Array#__get
    i32.const 0
    i32.eq
@@ -4015,7 +4030,7 @@
      i32.const 66
      call $~lib/typedarray/Uint8Array#__get
      local.get $9
-     i32.const 255
+     i32.const 65535
      i32.and
      i32.eq
     else
@@ -4026,13 +4041,13 @@
      local.get $4
      call $~lib/array/Array<u16>#get:length
      local.get $9
-     i32.extend8_s
      call $~lib/array/Array<u16>#__set
     end
    else
     local.get $1
     local.get $9
-    i32.extend8_s
+    i32.const 65535
+    i32.and
     call $~lib/typedarray/Uint8Array#__get
     i32.const 3
     i32.const 7
@@ -4052,11 +4067,10 @@
       local.get $9
       i32.const 5
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
       local.get $4
       local.get $4
@@ -4064,11 +4078,10 @@
       local.get $9
       i32.const 4
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
       local.get $4
       local.get $4
@@ -4076,11 +4089,10 @@
       local.get $9
       i32.const 3
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
       local.get $4
       local.get $4
@@ -4088,18 +4100,16 @@
       local.get $9
       i32.const 2
       i32.const 6
-      i32.const 7
+      i32.const 15
       i32.and
       i32.shl
       i32.add
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
      else
       local.get $4
       local.get $4
       call $~lib/array/Array<u16>#get:length
       local.get $9
-      i32.extend8_s
       call $~lib/array/Array<u16>#__set
      end
     end
@@ -8376,7 +8386,7 @@
   i32.const 0
   i32.const 1
   i32.const 4
-  i32.const 1488
+  i32.const 1392
   call $~lib/rt/__newArray
   local.tee $2
   i32.store
@@ -8385,60 +8395,71 @@
   call $src/assembly/generatePseudoMoves/generatePseudoMoves
   local.tee $1
   i32.store offset=4
-  i32.const 0
-  local.set $3
   local.get $1
-  call $~lib/array/Array<u16>#get:length
-  local.set $4
-  loop $for-loop|0
-   local.get $3
-   local.get $4
-   i32.lt_s
-   local.set $5
-   local.get $5
-   if
-    global.get $~lib/memory/__stack_pointer
-    local.get $1
+  if
+   i32.const 0
+   local.set $3
+   local.get $1
+   call $~lib/array/Array<u16>#get:length
+   local.set $4
+   loop $for-loop|0
     local.get $3
-    call $~lib/array/Array<u16>#__get
-    local.get $0
-    call $src/assembly/getMovedBoard/getMovedBoard
-    local.tee $6
-    i32.store offset=8
-    local.get $6
-    local.get $6
-    i32.const 6
-    local.get $0
-    i32.const 64
-    call $~lib/typedarray/Uint8Array#__get
-    i32.const 3
-    i32.const 7
-    i32.and
-    i32.shl
-    i32.add
-    i32.const 0
-    call $~lib/typedarray/Uint8Array#indexOf
-    local.get $0
-    i32.const 64
-    call $~lib/typedarray/Uint8Array#__get
-    call $src/assembly/isCaptured/isCaptured
-    i32.eqz
+    local.get $4
+    i32.lt_s
+    local.set $5
+    local.get $5
     if
-     local.get $2
+     global.get $~lib/memory/__stack_pointer
      local.get $1
      local.get $3
      call $~lib/array/Array<u16>#__get
-     call $~lib/array/Array<u16>#push
-     drop
+     local.get $0
+     call $src/assembly/getMovedBoard/getMovedBoard
+     local.tee $6
+     i32.store offset=8
+     local.get $6
+     local.get $6
+     i32.const 6
+     local.get $0
+     i32.const 64
+     call $~lib/typedarray/Uint8Array#__get
+     i32.const 3
+     i32.const 7
+     i32.and
+     i32.shl
+     i32.add
+     i32.const 0
+     call $~lib/typedarray/Uint8Array#indexOf
+     local.get $0
+     i32.const 64
+     call $~lib/typedarray/Uint8Array#__get
+     call $src/assembly/isCaptured/isCaptured
+     i32.eqz
+     if
+      local.get $2
+      local.get $1
+      local.get $3
+      call $~lib/array/Array<u16>#__get
+      call $~lib/array/Array<u16>#push
+      drop
+     end
+     local.get $3
+     i32.const 1
+     i32.add
+     local.set $3
+     br $for-loop|0
     end
-    local.get $3
-    i32.const 1
-    i32.add
-    local.set $3
-    br $for-loop|0
    end
+   local.get $2
+   local.set $7
+   global.get $~lib/memory/__stack_pointer
+   i32.const 12
+   i32.add
+   global.set $~lib/memory/__stack_pointer
+   local.get $7
+   return
   end
-  local.get $2
+  i32.const 0
   local.set $7
   global.get $~lib/memory/__stack_pointer
   i32.const 12

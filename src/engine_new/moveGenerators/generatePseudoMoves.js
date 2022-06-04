@@ -20,7 +20,7 @@ export const generatePseudoMoves = (board) => {
 
     const sourcePart = cellIndex << 10;
     for (const targetIndex of targetIndexes) {
-      if (board[targetIndex] > 0) {
+      if (board[targetIndex & 63] > 0) {
         hitMoves[hitMoves.length] = sourcePart + targetIndex;
         continue;
       }

@@ -12,7 +12,7 @@ const moveGenerators: ArrOfFuncs = [
   getKingMoves,
 ];
 
-export function generatePseudoMoves(board: Uint8Array): u16[] {
+export function generatePseudoMoves(board: Uint8Array): u16[] | null {
   const nonHitMoves: u16[] = [];
   const hitMoves: u16[] = [];
   const kingCell = board.indexOf(6 + ((board[64] ^ 1) << 3));
@@ -25,7 +25,8 @@ export function generatePseudoMoves(board: Uint8Array): u16[] {
     const sourcePart = u16(cellIndex) << 10;
     for (let i = 0, len = targetIndexes.length; i < len; i += 1) {
       if (board[targetIndexes[i] & 63] > 0) {
-        if (targetIndexes[i] === kingCell) throw false;
+        if (targetIndexes[i] === kingCell) return null; //move a8a8: represents illegal board, as king can be hit on this one
+        // abort(`${board[cellIndex]} ${board[targetIndexes[i]]} ${cellIndex} ${targetIndexes[i]} ${kingCell} ${board}`);
         hitMoves[hitMoves.length] = sourcePart + targetIndexes[i];
         continue;
       }

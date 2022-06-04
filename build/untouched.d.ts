@@ -69,9 +69,9 @@ export declare function isCaptured(board: Uint8Array, cellIndex: number, color: 
 /**
  * src/assembly/generatePseudoMoves/generatePseudoMoves
  * @param board `~lib/typedarray/Uint8Array`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u16> | null`
  */
-export declare function generatePseudoMoves(board: Uint8Array): Array<number>;
+export declare function generatePseudoMoves(board: Uint8Array): Array<number> | null;
 /**
  * src/assembly/perft/perft
  * @param depth `i8`
@@ -88,6 +88,6 @@ export declare function typeTest(position: number): Array<number>;
 /**
  * src/assembly/generateLegalMoves/generateLegalMoves
  * @param board `~lib/typedarray/Uint8Array`
- * @returns `~lib/array/Array<u16>`
+ * @returns `~lib/array/Array<u16> | null`
  */
-export declare function generateLegalMoves(board: Uint8Array): Array<number>;
+export declare function generateLegalMoves(board: Uint8Array): Array<number> | null;

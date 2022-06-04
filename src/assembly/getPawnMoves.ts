@@ -7,7 +7,7 @@ export function getPawnMoves(position: i8, board: Uint8Array, color: u8): u16[] 
   const canHitLeft = file > 0;
 
   if (color) {
-    const straightTarget = position - 8;
+    const straightTarget: u16 = position - 8;
     if (board[straightTarget] === 0) {
       if (rank === 1) {
         // promotion and underPromotion
@@ -20,18 +20,19 @@ export function getPawnMoves(position: i8, board: Uint8Array, color: u8): u16[] 
       }
 
       if (rank === 6) {
-        const doubleMoveTarget = position - 16;
+        const doubleMoveTarget: u16 = position - 16;
         if (board[doubleMoveTarget] === 0) targets[targets.length] = doubleMoveTarget;
       }
     }
 
     if (canHitRight) {
-      const rightHitTarget = position - 7;
+      const rightHitTarget: u16 = position - 7;
       if (board[rightHitTarget] === 0) {
         if (rank === 3 && board[66] === rightHitTarget) targets[targets.length] = rightHitTarget; // en passant
       } else if (board[rightHitTarget] >>> 3 === 0) {
         if (rank === 1) {
           // promotion and underPromotion
+
           targets[targets.length] = rightHitTarget + (13 << 6); // can become queen
           targets[targets.length] = rightHitTarget + (12 << 6); // can become rook
           targets[targets.length] = rightHitTarget + (11 << 6); // can become knight
@@ -43,7 +44,7 @@ export function getPawnMoves(position: i8, board: Uint8Array, color: u8): u16[] 
     }
 
     if (canHitLeft) {
-      const leftHitTarget = position - 9;
+      const leftHitTarget: u16 = position - 9;
       if (board[leftHitTarget] === 0) {
         // target is empty
         if (rank === 3 && board[66] === leftHitTarget) targets[targets.length] = leftHitTarget; // en passant
@@ -64,7 +65,7 @@ export function getPawnMoves(position: i8, board: Uint8Array, color: u8): u16[] 
   }
 
   // is black
-  const straightTarget = position + 8;
+  const straightTarget: u16 = position + 8;
   if (board[straightTarget] === 0) {
     if (rank === 6) {
       // promotion and underPromotion
@@ -77,13 +78,13 @@ export function getPawnMoves(position: i8, board: Uint8Array, color: u8): u16[] 
     }
 
     if (rank === 1) {
-      const doubleMoveTarget = position + 16;
+      const doubleMoveTarget: u16 = position + 16;
       if (board[doubleMoveTarget] === 0) targets[targets.length] = doubleMoveTarget;
     }
   }
 
   if (canHitRight) {
-    const rightHitTarget = position + 9;
+    const rightHitTarget: u16 = position + 9;
     if (board[rightHitTarget] === 0) {
       // target is empty
       if (rank === 4 && board[66] === rightHitTarget) targets[targets.length] = rightHitTarget; // en passant
@@ -101,7 +102,7 @@ export function getPawnMoves(position: i8, board: Uint8Array, color: u8): u16[] 
   }
 
   if (canHitLeft) {
-    const leftHitTarget = position + 7;
+    const leftHitTarget: u16 = position + 7;
     if (board[leftHitTarget] === 0) {
       if (rank === 4 && board[66] === leftHitTarget) targets[targets.length] = leftHitTarget; // en passant
     } else if (board[leftHitTarget] >>> 3 === 1) {

@@ -66,7 +66,7 @@ async function instantiate(module, imports = {}) {
       return exports.isCaptured(board, cellIndex, color) != 0;
     },
     generatePseudoMoves(board) {
-      // src/assembly/generatePseudoMoves/generatePseudoMoves(~lib/typedarray/Uint8Array) => ~lib/array/Array<u16>
+      // src/assembly/generatePseudoMoves/generatePseudoMoves(~lib/typedarray/Uint8Array) => ~lib/array/Array<u16> | null
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.generatePseudoMoves(board) >>> 0);
     },
@@ -80,7 +80,7 @@ async function instantiate(module, imports = {}) {
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.typeTest(position) >>> 0);
     },
     generateLegalMoves(board) {
-      // src/assembly/generateLegalMoves/generateLegalMoves(~lib/typedarray/Uint8Array) => ~lib/array/Array<u16>
+      // src/assembly/generateLegalMoves/generateLegalMoves(~lib/typedarray/Uint8Array) => ~lib/array/Array<u16> | null
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Uint16Array(memory.buffer)[pointer >>> 1], 1, exports.generateLegalMoves(board) >>> 0);
     },
