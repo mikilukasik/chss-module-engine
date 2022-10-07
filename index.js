@@ -30,6 +30,7 @@ const {
   isCaptured: isCapturedWasm,
   evaluateBoard: evaluateBoardWasm,
   perft: perftWasm,
+  minimax: minimaxWasm,
   typeTest: typeTestWasm,
 } = wasmModule.exports;
 
@@ -39,7 +40,10 @@ export const generatePseudoMoves = (board) => __getArray(generatePseudoMovesWasm
 
 export const perft = (depth, board) => perftWasm(depth, __newArray(Uint8Array_ID, board));
 
-export const evaluateBoard = (board) => evaluateBoardWasm(__newArray(Uint8Array_ID, board));
+export const evaluateBoard = (board) => __getArray(evaluateBoardWasm(__newArray(Uint8Array_ID, board)));
+
+export const minimax = (board, depth, alpha, beta, valueToAdd) =>
+  __getArray(minimaxWasm(__newArray(Uint8Array_ID, board), depth, alpha, beta, valueToAdd));
 
 export const isCaptured = (board, cellIndex, color) =>
   isCapturedWasm(__newArray(Uint8Array_ID, board), cellIndex, color);

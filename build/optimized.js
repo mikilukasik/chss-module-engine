@@ -125,10 +125,17 @@ async function instantiate(module, imports = {}) {
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
       return __liftArray(pointer => new Float32Array(memory.buffer)[pointer >>> 2], 2, exports.getDefenderValues(board, cellIndex, color) >>> 0);
     },
-    evaluateBoard(board) {
-      // src/assembly/evaluateBoard/evaluateBoard(~lib/typedarray/Uint8Array) => f32
+    evaluateBoard(board, valueToAdd) {
+      // src/assembly/evaluateBoard/evaluateBoard(~lib/typedarray/Uint8Array, f32?) => ~lib/array/Array<f32>
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
-      return exports.evaluateBoard(board);
+      exports.__setArgumentsLength(arguments.length);
+      return __liftArray(pointer => new Float32Array(memory.buffer)[pointer >>> 2], 2, exports.evaluateBoard(board, valueToAdd) >>> 0);
+    },
+    minimax(board, depth, alpha, beta, valueToAdd) {
+      // src/assembly/minimax/minimax(~lib/typedarray/Uint8Array, u8, f32?, f32?, f32?) => ~lib/array/Array<f32>
+      board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
+      exports.__setArgumentsLength(arguments.length);
+      return __liftArray(pointer => new Float32Array(memory.buffer)[pointer >>> 2], 2, exports.minimax(board, depth, alpha, beta, valueToAdd) >>> 0);
     },
   }, exports);
   function __liftString(pointer) {
@@ -202,7 +209,8 @@ export const {
   generateLegalMoves,
   getHitMovesNoPromotion,
   getDefenderValues,
-  evaluateBoard
+  evaluateBoard,
+  minimax
 } = await (async url => instantiate(
   await (async () => {
     try { return await globalThis.WebAssembly.compileStreaming(globalThis.fetch(url)) }

@@ -3,7 +3,24 @@ import instantiate from '../../../build/optimized.wasm';
 let _wasmEngine;
 const wasmEngineAwaiters = [];
 
-const transformEngine = ({ __new, __pin, __unpin, getMovedBoard: getMovedBoardWasm, add, memory }) => {
+const transformEngine = ({
+  __new,
+  __pin,
+  __unpin,
+  __setArgumentsLength,
+  getMovedBoard: getMovedBoardWasm,
+  minimax: minimaxWasm,
+  memory,
+}) => {
+  function __liftArray(liftElement, align, pointer) {
+    if (!pointer) return null;
+    const memoryU32 = new Uint32Array(memory.buffer),
+      dataStart = memoryU32[(pointer + 4) >>> 2],
+      length = memoryU32[(pointer + 12) >>> 2],
+      values = new Array(length);
+    for (let i = 0; i < length; ++i) values[i] = liftElement(dataStart + ((i << align) >>> 0));
+    return values;
+  }
   function __liftTypedArray(constructor, pointer) {
     if (!pointer) return null;
     const memoryU32 = new Uint32Array(memory.buffer);
@@ -29,9 +46,16 @@ const transformEngine = ({ __new, __pin, __unpin, getMovedBoard: getMovedBoardWa
 
   return {
     getMovedBoard: (move, board) => {
-      return __liftTypedArray(Int8Array, getMovedBoardWasm(move, __lowerTypedArray(Int8Array, 3, 0, board)) >>> 0);
+      return __liftTypedArray(Uint8Array, getMovedBoardWasm(move, __lowerTypedArray(Uint8Array, 3, 0, board)) >>> 0);
     },
-    add,
+    minimax(board, depth, alpha, beta, valueToAdd) {
+      __setArgumentsLength(arguments.length);
+      return __liftArray(
+        (pointer) => new Float32Array(memory.buffer)[pointer >>> 2],
+        2,
+        minimaxWasm(__lowerTypedArray(Uint8Array, 3, 0, board), depth, alpha, beta, valueToAdd) >>> 0,
+      );
+    },
   };
 };
 

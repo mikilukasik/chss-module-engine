@@ -157,6 +157,17 @@ export declare function getDefenderValues(board: Uint8Array, cellIndex: number, 
 /**
  * src/assembly/evaluateBoard/evaluateBoard
  * @param board `~lib/typedarray/Uint8Array`
- * @returns `f32`
+ * @param valueToAdd `f32`
+ * @returns `~lib/array/Array<f32>`
  */
-export declare function evaluateBoard(board: Uint8Array): number;
+export declare function evaluateBoard(board: Uint8Array, valueToAdd?: number): Array<number>;
+/**
+ * src/assembly/minimax/minimax
+ * @param board `~lib/typedarray/Uint8Array`
+ * @param depth `u8`
+ * @param alpha `f32`
+ * @param beta `f32`
+ * @param valueToAdd `f32`
+ * @returns `~lib/array/Array<f32>`
+ */
+export declare function minimax(board: Uint8Array, depth: number, alpha?: number, beta?: number, valueToAdd?: number): Array<number>;

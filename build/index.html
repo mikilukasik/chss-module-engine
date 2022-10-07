@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <script type="module">
+      import { minimax } from './optimized.js';
+      const started = Date.now();
+      document.body.innerText =
+        minimax(
+          [
+            4, 3, 2, 5, 6, 2, 3, 4, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+            0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 9, 9, 9, 9, 9, 9, 9, 9, 12, 11, 10, 13, 14, 10, 11, 12, 0, 0, 0,
+          ],
+          6,
+          -99999,
+          99999,
+          0,
+        ).join(', ') +
+        '    ' +
+        (Date.now() - started);
+    </script>
+  </head>
+  <body></body>
+</html>

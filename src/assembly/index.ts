@@ -19,5 +19,6 @@ export { generateLegalMoves } from './generateLegalMoves';
 export { getHitMovesNoPromotion } from './getHitMovesNoPromotion';
 export { getDefenderValues } from './getDefenderValues';
 export { evaluateBoard } from './evaluateBoard';
+export { minimax } from './minimax';
 
 export const Uint8Array_ID = idof<Uint8Array>();

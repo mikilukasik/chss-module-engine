@@ -128,7 +128,7 @@ const cellLoop = (
   }
 };
 
-export function evaluateBoard(board: Uint8Array): f32 {
+export function evaluateBoard(board: Uint8Array, valueToAdd: f32 = 0): f32[] {
   let pieceBalance: f32 = 0;
   const attackMap = new Map<u8, f32[]>();
   const defendMap = new Map<u8, f32[]>();
@@ -146,7 +146,7 @@ export function evaluateBoard(board: Uint8Array): f32 {
       // piece is color to move, can be attacker
 
       hitCells = getHitMovesNoPromotion(board, index);
-      if (hitCells.includes(kingCell)) abort('implement kinghit in evaluateBoard!'); // king can be hit, board is illegal
+      if (hitCells.includes(kingCell)) return [1, 0]; // king can be hit, board is illegal
 
       for (let i: u8 = 0, len = u8(hitCells.length); i < len; i += 1) {
         attackMap.set(
@@ -169,5 +169,5 @@ export function evaluateBoard(board: Uint8Array): f32 {
     hitScore = cellLoop(board, attackMap, defendMap, attackedIndexes, hitScore, i);
   }
 
-  return board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore; // << 8;
+  return [0, valueToAdd + board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore]; // << 8;
 }
