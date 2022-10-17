@@ -38,6 +38,7 @@ export const moveInBoard = (move, game) => {
     }
   }
 
+  game.moves.push(move);
   game.allPastFens.push(board2fen(game.bitBoard));
 
   const pastFensOccurranceCount = game.allPastFens.reduce((p, c) => {
