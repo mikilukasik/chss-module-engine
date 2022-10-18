@@ -10,6 +10,8 @@ const getPromotionPiece = (move) => {
 export const move2moveString = (move) =>
   `${cellIndex2cellStr(move >>> 10)}${cellIndex2cellStr(move & 63)}${getPromotionPiece(move)}`;
 
+export const cellStr2cellIndex = (cellStr) => ((8 - Number(cellStr[1])) << 3) + (cellStr.charCodeAt(0) - 97);
+
 export const moveString2move = (moveStr) =>
   ((8 - Number(moveStr[1])) << 13) +
   ((moveStr.charCodeAt(0) - 97) << 10) +
