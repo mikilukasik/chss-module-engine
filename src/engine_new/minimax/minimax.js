@@ -1,11 +1,11 @@
 import { evaluateBoard } from '../evaluators/evaluateBoard_new.js';
 import { generatePseudoMovesThrowMethod } from '../moveGenerators/generatePseudoMovesThrowMethod.js';
 
-import { getWasmEngine } from '../utils/wasmEngine.js';
-// import { getMovedBoard } from '../utils/getMovedBoard.js';
+// import { getWasmEngine } from '../utils/wasmEngine.js';
+import { getMovedBoard } from '../utils/getMovedBoard.js';
 
 export const minimax = async (board, depth, alpha, beta, valueToAdd) => {
-  const { getMovedBoard } = await getWasmEngine();
+  // const { getMovedBoard } = await getWasmEngine();
 
   if (depth === 0) return evaluateBoard(board) + valueToAdd;
 

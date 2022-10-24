@@ -4,11 +4,14 @@ import { isCaptured } from '../engine_new/utils/isCaptured.js';
 import { board2fen } from '../engine_new/transformers/board2fen.js';
 import { evaluateBoard } from '../engine_new/evaluators/evaluateBoard.js';
 
+const pieces = ['', 'p', 'b', 'n', 'r', 'q', 'k', '', '', 'P', 'B', 'N', 'R', 'Q', 'K'];
+
 export const moveString2move = (moveStr) =>
   ((8 - Number(moveStr[1])) << 13) +
   ((moveStr.charCodeAt(0) - 97) << 10) +
   ((8 - Number(moveStr[3])) << 3) +
-  (moveStr.charCodeAt(2) - 97);
+  (moveStr.charCodeAt(2) - 97) +
+  (moveStr[4] ? pieces.indexOf(moveStr[4]) << 6 : 0);
 
 export const moveInBoard = (move, game) => {
   game.bitBoard = getMovedBoard(move, game.board);
