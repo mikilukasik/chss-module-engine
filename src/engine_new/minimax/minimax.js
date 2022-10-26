@@ -4,7 +4,7 @@ import { generatePseudoMovesThrowMethod } from '../moveGenerators/generatePseudo
 // import { getWasmEngine } from '../utils/wasmEngine.js';
 import { getMovedBoard } from '../utils/getMovedBoard.js';
 
-export const minimax = async (board, depth, alpha, beta, valueToAdd) => {
+export const minimax = async (board, depth, alpha, beta, valueToAdd = 0) => {
   // const { getMovedBoard } = await getWasmEngine();
 
   if (depth === 0) return evaluateBoard(board) + valueToAdd;
@@ -41,3 +41,10 @@ export const minimax = async (board, depth, alpha, beta, valueToAdd) => {
 
   return value;
 };
+
+// getWasmEngine()
+//   .then((we) => {
+//     console.log({we})
+
+//   })
+//   .catch(console.error);

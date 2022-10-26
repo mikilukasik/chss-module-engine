@@ -1,25 +1,25 @@
 import { getHitMovesNoPromotion, getDefenderValues } from '.';
-const pieceValues: f32[] = [0, -1, -3.33, -3.05, -5.63, -9.5, -15, 0, 0, 1, 3.33, 3.05, 5.63, 9.5, 15];
-const positivePieceValues: f32[] = [0, 1, 3.33, 3.05, 5.63, 9.5, 15, 0, 0, 1, 3.33, 3.05, 5.63, 9.5, 15];
+const pieceValues: i16[] = [0, -100, -333, -305, -563, -950, -1500, 0, 0, 100, 333, 305, 563, 950, 1500];
+const positivePieceValues: i16[] = [0, 100, 333, 305, 563, 950, 1500, 0, 0, 100, 333, 305, 563, 950, 1500];
 
 const cellLoop = (
   board: Uint8Array,
-  attackMap: Map<u8, f32[]>,
-  defendMap: Map<u8, f32[]>,
+  attackMap: Map<u8, i16[]>,
+  defendMap: Map<u8, i16[]>,
   attackedIndexes: u8[],
-  hitScore: f32,
+  hitScore: i16,
   i: u8,
-): f32 => {
+): i16 => {
   // of attackMap.keys()) {
-  let thisCellValue: f32 = 0;
-  let weakestProtector: f32;
-  let weakestAttacker: f32;
+  let thisCellValue: i16 = 0;
+  let weakestProtector: i16;
+  let weakestAttacker: i16;
   let hasMoreAttackers: bool;
   let hasMoreProtectors: bool;
   if (defendMap.get(attackedIndexes[i]).length === 0) {
     // cell has no protector
     // this cell can be hit, add value and check next cell
-    const thisHitScore: f32 = positivePieceValues[board[attackedIndexes[i]]];
+    const thisHitScore: i16 = positivePieceValues[board[attackedIndexes[i]]];
     // allHitScore += thisHitScore;
     if (thisHitScore > hitScore) hitScore = thisHitScore;
 
@@ -129,9 +129,9 @@ const cellLoop = (
 };
 
 export function evaluateBoard(board: Uint8Array, valueToAdd: f32 = 0): f32[] {
-  let pieceBalance: f32 = 0;
-  const attackMap = new Map<u8, f32[]>();
-  const defendMap = new Map<u8, f32[]>();
+  let pieceBalance: i16 = 0;
+  const attackMap = new Map<u8, i16[]>();
+  const defendMap = new Map<u8, i16[]>();
 
   const kingCell = u8(board.indexOf(6 + ((board[64] ^ 1) << 3)));
 
@@ -161,7 +161,7 @@ export function evaluateBoard(board: Uint8Array, valueToAdd: f32 = 0): f32[] {
     }
   }
 
-  let hitScore: f32 = 0;
+  let hitScore: i16 = 0;
 
   const attackedIndexes: u8[] = attackMap.keys();
 
@@ -169,5 +169,11 @@ export function evaluateBoard(board: Uint8Array, valueToAdd: f32 = 0): f32[] {
     hitScore = cellLoop(board, attackMap, defendMap, attackedIndexes, hitScore, i);
   }
 
-  return [0, valueToAdd + board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore]; // << 8;
+  // return [2, valueToAdd, pieceBalance / 100, hitScore / 100]; // + board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore]; // << 8;
+  return [
+    0,
+    valueToAdd + f32(board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore) / 100,
+    // pieceBalance,
+    // hitScore,
+  ]; // << 8;
 }

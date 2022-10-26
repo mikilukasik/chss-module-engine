@@ -121,9 +121,9 @@ async function instantiate(module, imports = {}) {
       return __liftArray(pointer => new Uint8Array(memory.buffer)[pointer >>> 0], 0, exports.getHitMovesNoPromotion(board, cellIndex) >>> 0);
     },
     getDefenderValues(board, cellIndex, color) {
-      // src/assembly/getDefenderValues/getDefenderValues(~lib/typedarray/Uint8Array, i8, u8) => ~lib/array/Array<f32>
+      // src/assembly/getDefenderValues/getDefenderValues(~lib/typedarray/Uint8Array, i8, u8) => ~lib/array/Array<i16>
       board = __lowerTypedArray(Uint8Array, 3, 0, board) || __notnull();
-      return __liftArray(pointer => new Float32Array(memory.buffer)[pointer >>> 2], 2, exports.getDefenderValues(board, cellIndex, color) >>> 0);
+      return __liftArray(pointer => new Int16Array(memory.buffer)[pointer >>> 1], 1, exports.getDefenderValues(board, cellIndex, color) >>> 0);
     },
     evaluateBoard(board, valueToAdd) {
       // src/assembly/evaluateBoard/evaluateBoard(~lib/typedarray/Uint8Array, f32?) => ~lib/array/Array<f32>

@@ -141,5 +141,6 @@ export const evaluateBoard = (board) => {
     }
   }
 
+  // console.log({ pieceBalance, hitScore });
   return board[64] === 1 ? pieceBalance + hitScore : pieceBalance - hitScore; // << 8;
 };

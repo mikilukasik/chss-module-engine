@@ -10,6 +10,7 @@ const transformEngine = ({
   __setArgumentsLength,
   getMovedBoard: getMovedBoardWasm,
   minimax: minimaxWasm,
+  evaluateBoard: evaluateBoardWasm,
   memory,
 }) => {
   function __liftArray(liftElement, align, pointer) {
@@ -54,6 +55,15 @@ const transformEngine = ({
         (pointer) => new Float32Array(memory.buffer)[pointer >>> 2],
         2,
         minimaxWasm(__lowerTypedArray(Uint8Array, 3, 0, board), depth, alpha, beta, valueToAdd) >>> 0,
+      );
+    },
+
+    evaluateBoard(board, valueToAdd) {
+      __setArgumentsLength(arguments.length);
+      return __liftArray(
+        (pointer) => new Float32Array(memory.buffer)[pointer >>> 2],
+        2,
+        evaluateBoardWasm(__lowerTypedArray(Uint8Array, 3, 0, board), valueToAdd) >>> 0,
       );
     },
   };

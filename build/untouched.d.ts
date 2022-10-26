@@ -151,7 +151,7 @@ export declare function getHitMovesNoPromotion(board: Uint8Array, cellIndex: num
  * @param board `~lib/typedarray/Uint8Array`
  * @param cellIndex `i8`
  * @param color `u8`
- * @returns `~lib/array/Array<f32>`
+ * @returns `~lib/array/Array<i16>`
  */
 export declare function getDefenderValues(board: Uint8Array, cellIndex: number, color: number): Array<number>;
 /**
