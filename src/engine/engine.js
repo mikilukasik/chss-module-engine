@@ -3,6 +3,7 @@ import { generateLegalMoves } from '../engine_new/moveGenerators/generateLegalMo
 import { isCaptured } from '../engine_new/utils/isCaptured.js';
 import { board2fen } from '../engine_new/transformers/board2fen.js';
 import { evaluateBoard } from '../engine_new/evaluators/evaluateBoard.js';
+import { getUpdatedLmfLmt } from '../engine_new/utils/getUpdatedLmfLmt.js';
 
 const pieces = ['', 'p', 'b', 'n', 'r', 'q', 'k', '', '', 'P', 'B', 'N', 'R', 'Q', 'K'];
 
@@ -42,6 +43,11 @@ export const moveInBoard = (move, game) => {
   }
 
   game.moves.push(move);
+
+  const nextLm = getUpdatedLmfLmt({ move, lmf: game.lmf, lmt: game.lmt });
+  game.lmf = nextLm.lmf;
+  game.lmt = nextLm.lmt;
+
   game.allPastFens.push(board2fen(game.bitBoard));
 
   const pastFensOccurranceCount = game.allPastFens.reduce((p, c) => {

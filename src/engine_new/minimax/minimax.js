@@ -14,6 +14,8 @@ export const minimax = async (board, depth, alpha, beta, valueToAdd = 0) => {
   if (board[64]) {
     let value = -99999 - depth;
     for (const move of moves) {
+      // if (move === 31807) console.log('a');
+
       const movedBoard = getMovedBoard(move, board);
       try {
         value = Math.max(value, await minimax(movedBoard, depth - 1, alpha, beta, valueToAdd));
@@ -29,6 +31,8 @@ export const minimax = async (board, depth, alpha, beta, valueToAdd = 0) => {
 
   let value = 99999 + depth;
   for (const move of moves) {
+    // if (move === 31807) console.log('b');
+
     const movedBoard = getMovedBoard(move, board);
     try {
       value = Math.min(value, await minimax(movedBoard, depth - 1, alpha, beta, valueToAdd));

@@ -38,6 +38,9 @@ export class GameModel {
     this.castlingAvailability = 'KQkq';
     this.enPassantTarget = '-';
 
+    this.lmf = new Array(64).fill(255);
+    this.lmt = new Array(64).fill(255);
+
     this.completed = false;
 
     // from old engine
