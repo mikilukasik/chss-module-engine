@@ -20,8 +20,9 @@ export const generatePseudoMovesThrowMethod = (board) => {
 
     const sourcePart = cellIndex << 10;
     for (const targetIndex of targetIndexes) {
-      if (board[targetIndex] > 0) {
-        if (targetIndex === kingCell) throw false;
+      const _targetIndex = targetIndex & 63;
+      if (board[_targetIndex] > 0) {
+        if (_targetIndex === kingCell) throw false;
         hitMoves[hitMoves.length] = sourcePart + targetIndex;
         continue;
       }

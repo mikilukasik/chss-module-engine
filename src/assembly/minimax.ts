@@ -34,7 +34,8 @@ export function minimax(
         }
       }
 
-      return [0, value]; //.concat(/* move tracking */ winningMoves);
+      return [0, value];
+      // return [0, value].concat(/* move tracking */ winningMoves);
     }
 
     let value: f32 = 99999 + depth;
@@ -58,7 +59,8 @@ export function minimax(
       }
     }
 
-    return [0, value]; //.concat(/* move tracking */ winningMoves);
+    return [0, value];
+    // return [0, value].concat(/* move tracking */ winningMoves);
   }
 
   // moves came back as null, this is an illegal board

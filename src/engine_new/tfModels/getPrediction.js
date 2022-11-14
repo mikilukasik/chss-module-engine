@@ -1,11 +1,6 @@
 import { board2fen } from '../transformers/board2fen.js';
 import { getModel } from './getModel.js';
 
-import * as tf from '@tensorflow/tfjs';
-import { setWasmPaths } from '@tensorflow/tfjs-backend-wasm';
-
-setWasmPaths('/assets/wasm_bin/');
-
 const indexes = new Array(8)
   .fill(null)
   .map((dummy, row) => new Array(8).fill(0).map((dummy2, col) => 8 * (7 - row) + col))
@@ -21,7 +16,7 @@ const getInverseMoves = (arr) => {
   return [...newFrom, ...newTo];
 };
 
-export const getPrediction = async ({ modelName, board, repeatedPastFens = [], noLoop = false }) => {
+export const getPrediction = async ({ modelName, board, repeatedPastFens = [], noLoop = false, tf }) => {
   const {
     model,
     transform,

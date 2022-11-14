@@ -24,8 +24,10 @@ export function generatePseudoMoves(board: Uint8Array): u16[] | null {
     if (!targetIndexes.length) continue;
     const sourcePart = u16(cellIndex) << 10;
     for (let i = 0, len = targetIndexes.length; i < len; i += 1) {
-      if (board[targetIndexes[i] & 63] > 0) {
-        if (targetIndexes[i] === kingCell) return null; //move a8a8: represents illegal board, as king can be hit on this one
+      const tIndex = targetIndexes[i] & 63;
+
+      if (board[tIndex] > 0) {
+        if (tIndex === kingCell) return null; //move a8a8: represents illegal board, as king can be hit on this one
         // abort(`${board[cellIndex]} ${board[targetIndexes[i]]} ${cellIndex} ${targetIndexes[i]} ${kingCell} ${board}`);
         hitMoves[hitMoves.length] = sourcePart + targetIndexes[i];
         continue;
