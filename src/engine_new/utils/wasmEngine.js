@@ -78,7 +78,6 @@ instantiate({
   },
 }).then((wm) => {
   const { instance } = wm;
-  console.log({ wm });
   _wasmEngine = transformEngine(instance.exports);
   while (wasmEngineAwaiters.length) wasmEngineAwaiters.pop()(_wasmEngine);
 });
