@@ -14,11 +14,11 @@ const getModelResolvers = {};
 
 const loadModel = async (name) => {
   let loader;
-  eval(await (await fetch(`http://localhost:3300/models/${name}/loader.js`)).text());
+  eval(await (await fetch(`http://${self.location.hostname}:3300/models/${name}/loader.js`)).text());
 
   const { predict } = await loader({
     tf,
-    modelUrl: `http://localhost:3300/models/${name}/model.json`,
+    modelUrl: `http://${self.location.hostname}:3300/models/${name}/model.json`,
   });
 
   models[name] = { predict };
