@@ -68,7 +68,7 @@ export class GameModel {
 
     this.moved = null;
 
-    this.bitBoard = bitBoard || fen2intArray(fen);
+    this.bitBoard = bitBoard || board ? new Int8Array(board) : fen2intArray(fen);
 
     this.board = Array.from(board || this.bitBoard);
 
