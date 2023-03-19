@@ -1,26 +1,4 @@
-const parseFen = (fen) => {
-  const positions = fen.split(" ")[0].split("/");
-  const board = [];
-
-  positions.forEach((row, rowIndex) => {
-    board[rowIndex] = [];
-    let columnIndex = 0;
-
-    for (const char of row) {
-      if (isNaN(parseInt(char))) {
-        board[rowIndex][columnIndex] = char;
-        columnIndex++;
-      } else {
-        for (let i = 0; i < parseInt(char); i++) {
-          board[rowIndex][columnIndex] = "-";
-          columnIndex++;
-        }
-      }
-    }
-  });
-
-  return board;
-};
+import { fen2nestedArray } from "../transformers/fen2nestedArray.js";
 
 const findDifferences = (prevBoard, currBoard) => {
   const addedPieces = {};
@@ -74,8 +52,8 @@ const getMoveOptionsByDistance = (sourceSquares, targetSquares) => {
 };
 
 export const getFenDiff = (prevFen, currFen) => {
-  const prevBoard = parseFen(prevFen);
-  const currBoard = parseFen(currFen);
+  const prevBoard = fen2nestedArray(prevFen);
+  const currBoard = fen2nestedArray(currFen);
 
   const { addedPieces, removedPieces } = findDifferences(prevBoard, currBoard);
 
