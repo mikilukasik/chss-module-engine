@@ -145,8 +145,12 @@ export const ysToStats = ({ ys, board }) => {
 
   const { winningMove } = (
     board[64]
-      ? (data) => data
-      : ({ winningMove }) => ({ winningMove: mirrorMove(winningMove) })
+      ? ({ winningMove }) => ({
+          winningMove: addQueenPromotion(winningMove, board),
+        })
+      : ({ winningMove }) => ({
+          winningMove: addQueenPromotion(mirrorMove(winningMove), board),
+        })
   )(
     oneHotToMovesMap.reduce(
       (p, move, i) => {
