@@ -51,6 +51,71 @@ const getMoveOptionsByDistance = (sourceSquares, targetSquares) => {
   return moveOptions.sort((a, b) => b.distance - a.distance);
 };
 
+const getPromotionMove = ({
+  movedPieces: _mp,
+  addedPiecesResult: _ap,
+  removedPiecesResult: _rp,
+}) => {
+  const movedPieces = _mp.slice();
+  const addedPiecesResult = _ap.slice();
+  const removedPiecesResult = _rp.slice();
+
+  if (
+    movedPieces.length === 0 &&
+    addedPiecesResult.length === 1 &&
+    removedPiecesResult.length > 0
+  ) {
+    if (addedPiecesResult[0].square[1] === "1") {
+      const promotionSourceIndex = removedPiecesResult.findIndex(
+        ({ square, piece }) => piece === "p" && square[1] === "2"
+      );
+      if (promotionSourceIndex >= 0) {
+        const promotionMove = {
+          piece: addedPiecesResult[0].piece,
+          from: removedPiecesResult[promotionSourceIndex].square,
+          to: addedPiecesResult[0].square,
+        };
+        addedPiecesResult.pop();
+        removedPiecesResult.splice(promotionSourceIndex, 1);
+        return {
+          movedPieces,
+          addedPieces: addedPiecesResult,
+          removedPieces: removedPiecesResult,
+          promotionMove,
+        };
+      }
+    }
+
+    if (addedPiecesResult[0].square[1] === "8") {
+      const promotionSourceIndex = removedPiecesResult.findIndex(
+        ({ square, piece }) => piece === "P" && square[1] === "7"
+      );
+      if (promotionSourceIndex >= 0) {
+        const promotionMove = {
+          piece: addedPiecesResult[0].piece,
+          from: removedPiecesResult[promotionSourceIndex].square,
+          to: addedPiecesResult[0].square,
+        };
+        addedPiecesResult.pop();
+        removedPiecesResult.splice(promotionSourceIndex, 1);
+        return {
+          movedPieces,
+          addedPieces: addedPiecesResult,
+          removedPieces: removedPiecesResult,
+          promotionMove,
+        };
+      }
+    }
+  }
+
+  return {
+    movedPieces,
+    addedPieces: addedPiecesResult,
+    removedPieces: removedPiecesResult,
+    promotionMove: null,
+  };
+};
+
 export const getFenDiff = (prevFen, currFen) => {
   const prevBoard = fen2nestedArray(prevFen);
   const currBoard = fen2nestedArray(currFen);
@@ -81,7 +146,7 @@ export const getFenDiff = (prevFen, currFen) => {
 
     if (!targetSquares || !targetSquares.length) {
       removedPiecesResult.push(
-        ...sourceSquaresAsStrings.map((square) => ({ square }))
+        ...sourceSquaresAsStrings.map((square) => ({ square, piece }))
       );
       continue;
     }
@@ -129,9 +194,9 @@ export const getFenDiff = (prevFen, currFen) => {
     );
   }
 
-  return {
-    addedPieces: addedPiecesResult,
-    removedPieces: removedPiecesResult,
+  return getPromotionMove({
+    addedPiecesResult,
+    removedPiecesResult,
     movedPieces,
-  };
+  });
 };
