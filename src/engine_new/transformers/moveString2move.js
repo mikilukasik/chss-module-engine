@@ -1,19 +1,4 @@
-const promotionPieces = [
-  "",
-  null,
-  "b",
-  "n",
-  "r",
-  "q",
-  null,
-  null,
-  "",
-  null,
-  "B",
-  "N",
-  "R",
-  "Q",
-];
+const promotionPieces = ["", null, "b", "n", "r", "q"];
 
 export const cellIndex2cellStr = (index) =>
   `${String.fromCharCode((index % 8) + 97)}${8 - Math.floor(index / 8)}`;

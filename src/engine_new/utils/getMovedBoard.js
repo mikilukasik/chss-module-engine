@@ -13,15 +13,17 @@ export const getMovedBoard = (move, board) => {
   ) {
     case 1:
       // pawn
-      if (board[66] === targetIndex) copiedBoard[board[64] ? targetIndex + 8 : targetIndex - 8] = 0; // clear en passant hit
+      if (board[66] === targetIndex)
+        copiedBoard[board[64] ? targetIndex + 8 : targetIndex - 8] = 0; // clear en passant hit
       copiedBoard[66] = 0; // clear en passant target;
 
       if (targetIndex - sourceIndex === 16) copiedBoard[66] = targetIndex - 8; // black pawn double move, set en passant target
       if (sourceIndex - targetIndex === 16) copiedBoard[66] = targetIndex + 8; // white pawn double move, set en passant target
 
       // pawn can become queen
-      if (targetIndex >>> 3 === 0) copiedBoard[targetIndex] = (move >>> 6) & 15;
-      if (targetIndex >>> 3 === 7) copiedBoard[targetIndex] = (move >>> 6) & 15;
+      if (targetIndex >>> 3 === 0)
+        copiedBoard[targetIndex] = ((move >>> 6) & 7) + 8;
+      if (targetIndex >>> 3 === 7) copiedBoard[targetIndex] = (move >>> 6) & 7;
       break;
 
     case 4:
