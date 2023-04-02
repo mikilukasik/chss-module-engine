@@ -4,6 +4,7 @@ export function predict(arg: {
   board: Uint8Array;
   lmf: number[];
   lmt: number[];
+  nextMoves: Int16Array;
   tf: any;
   model: any;
 }): any;

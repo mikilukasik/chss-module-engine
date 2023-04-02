@@ -126,22 +126,8 @@ export const getXs = ({ board: origBoard, lmt: origLmt, lmf: origLmf, tf }) => {
   return tf.tensor(xsAsArray, [1, 8, 8, 14]);
 };
 
-export const ysToStats = ({ ys, board }) => {
-  const moveValues = ys.reduce((p, val, i) => {
-    p[
-      addQueenPromotion(
-        board[64] ? oneHotToMovesMap[i] : mirrorMove(oneHotToMovesMap[i]),
-        board
-      )
-    ] = val;
-    return p;
-  }, {});
-
-  const moveStringValues = oneHotToMovesMap.reduce((p, move, i) => {
-    const m = addQueenPromotion(board[64] ? move : mirrorMove(move), board);
-    p[move2moveString(m)] = ys[i];
-    return p;
-  }, {});
+export const ysToStats = ({ ys, board, nextMoves }) => {
+  const mirroredNextMoves = board[64] ? nextMoves : nextMoves.map(mirrorMove);
 
   const { winningMove } = (
     board[64]
@@ -154,6 +140,8 @@ export const ysToStats = ({ ys, board }) => {
   )(
     oneHotToMovesMap.reduce(
       (p, move, i) => {
+        if (!mirroredNextMoves.includes(move)) return p;
+
         return ys[i] > p.winningValue
           ? { winningMove: move, winningValue: ys[i] }
           : p;
@@ -164,15 +152,15 @@ export const ysToStats = ({ ys, board }) => {
 
   const winningMoveString = move2moveString(winningMove);
 
-  return { winningMoveString, moveValues, moveStringValues };
+  return { winningMoveString /*, moveValues, moveStringValues*/ };
 };
 
-export const predict = async ({ board, lmf, lmt, tf, model }) => {
+export const predict = async ({ board, lmf, lmt, tf, model, nextMoves }) => {
   const xs = getXs({ board, lmf, lmt, tf });
 
   const predictionTensor = model.predict(xs);
   const ys = await predictionTensor.data();
   predictionTensor.dispose();
 
-  return ysToStats({ ys, board });
+  return ysToStats({ ys, board, nextMoves });
 };
