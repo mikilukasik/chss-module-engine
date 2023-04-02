@@ -1,9 +1,9 @@
 declare module "predict.js";
 
 export function predict(arg: {
-  board: number[];
+  board: Uint8Array;
   lmf: number[];
-  lmt: numbder[];
+  lmt: number[];
   tf: any;
   model: any;
 }): any;
