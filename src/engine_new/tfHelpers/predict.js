@@ -1,5 +1,6 @@
 import { oneHotToMovesMap } from "../transformers/oneHotMovesMap.js";
 import { move2moveString } from "../transformers/move2moveString.js";
+import { move2oneHot } from "../transformers/oneHotMovesMap.js";
 
 const mirrorCell = (cellIndex) => {
   const rank = cellIndex >>> 3; // equals to rank
@@ -126,33 +127,38 @@ export const getXs = ({ board: origBoard, lmt: origLmt, lmf: origLmf, tf }) => {
   return tf.tensor(xsAsArray, [1, 8, 8, 14]);
 };
 
-export const ysToStats = ({ ys, board, nextMoves }) => {
-  const mirroredNextMoves = board[64] ? nextMoves : nextMoves.map(mirrorMove);
+export const ysToStats = ({ ys, board, nextMoves: _nextMoves }) => {
+  const nextMoves = Array.from(_nextMoves);
 
-  const { winningMove } = (
-    board[64]
-      ? ({ winningMove }) => ({
-          winningMove: addQueenPromotion(winningMove, board),
-        })
-      : ({ winningMove }) => ({
-          winningMove: addQueenPromotion(mirrorMove(winningMove), board),
-        })
-  )(
-    oneHotToMovesMap.reduce(
-      (p, move, i) => {
-        if (!mirroredNextMoves.includes(move)) return p;
+  const mirroredNextMoves = board[64]
+    ? nextMoves
+    : nextMoves.map((m) => {
+        console.log(m, mirrorMove(m));
+        return mirrorMove(m);
+      });
 
-        return ys[i] > p.winningValue
-          ? { winningMove: move, winningValue: ys[i] }
-          : p;
-      },
-      { winningMove: null, winningValue: -1000 }
-    )
-  );
+  const sortedMirroredMoves = mirroredNextMoves
+    .map((move) => ({
+      move,
+      score: ys[move2oneHot(move)] || 0,
+    }))
+    .sort((a, b) => b.score - a.score);
 
-  const winningMoveString = move2moveString(winningMove);
+  const sortedMoves = sortedMirroredMoves.map(({ move: _move, score }) => {
+    const move = board[64] ? _move : mirrorMove(_move);
+    return {
+      move,
+      moveString: move2moveString(move),
+      score,
+    };
+  });
 
-  return { winningMoveString /*, moveValues, moveStringValues*/ };
+  const winningMoveString = sortedMoves[0].moveString;
+
+  return {
+    winningMoveString,
+    sortedMoves,
+  };
 };
 
 export const predict = async ({ board, lmf, lmt, tf, model, nextMoves }) => {

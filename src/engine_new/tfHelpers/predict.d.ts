@@ -7,4 +7,7 @@ export function predict(arg: {
   nextMoves: Int16Array;
   tf: any;
   model: any;
-}): any;
+}): {
+  winningMoveString: string;
+  sortedMoves: { move: string; score: number }[];
+};

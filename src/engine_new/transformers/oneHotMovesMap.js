@@ -1,5 +1,6 @@
 import { getKnightMoves } from "../moveGenerators/getKnightMoves.js";
 import { getQueenMoves } from "../moveGenerators/getQueenMoves.js";
+import { move2moveIndexes } from "./move2moveIndexes.js";
 
 const pieces = [
   "",
@@ -68,3 +69,10 @@ export const oneHotToMovesMap = oneHotToMoveIndexesMap.map(
     );
   }
 );
+
+export const move2oneHot = (move) => {
+  const [from, to, _piece] = move2moveIndexes(move);
+  const piece = _piece === "q" ? "" : _piece;
+
+  return movesToOneHotMap[from][to][piece] || null;
+};
