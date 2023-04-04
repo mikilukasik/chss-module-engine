@@ -129,13 +129,7 @@ export const getXs = ({ board: origBoard, lmt: origLmt, lmf: origLmf, tf }) => {
 
 export const ysToStats = ({ ys, board, nextMoves: _nextMoves }) => {
   const nextMoves = Array.from(_nextMoves);
-
-  const mirroredNextMoves = board[64]
-    ? nextMoves
-    : nextMoves.map((m) => {
-        console.log(m, mirrorMove(m));
-        return mirrorMove(m);
-      });
+  const mirroredNextMoves = board[64] ? nextMoves : nextMoves.map(mirrorMove);
 
   const sortedMirroredMoves = mirroredNextMoves
     .map((move) => ({
