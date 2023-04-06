@@ -1,4 +1,4 @@
-import { getKnightMoves } from '../moveGenerators/getKnightMoves.js';
+import { getKnightMoves } from "../moveGenerators/getKnightMoves.js";
 
 export const isCaptured = (board, cellIndex, color) => {
   const rank = cellIndex >>> 3;
@@ -19,7 +19,8 @@ export const isCaptured = (board, cellIndex, color) => {
 
   // check if captured by knight
   const lookForKnightOn = getKnightMoves(cellIndex, board, color);
-  for (const cellToCheckKnightFor of lookForKnightOn) if ((board[cellToCheckKnightFor] & 7) === 3) return true;
+  for (const cellToCheckKnightFor of lookForKnightOn)
+    if ((board[cellToCheckKnightFor] & 7) === 3) return true;
 
   // check for bishop, rook, or king
   // rank is used instead of maxMovesUp
@@ -34,74 +35,139 @@ export const isCaptured = (board, cellIndex, color) => {
   const attackingKing = attackingColorPrefix + 6;
 
   const lastCellUpLeft = cellIndex - Math.min(rank, maxMovesLeft) * 9;
-  for (let currentCellIndex = cellIndex - 9; currentCellIndex >= lastCellUpLeft; currentCellIndex -= 9) {
+  for (
+    let currentCellIndex = cellIndex - 9;
+    currentCellIndex >= lastCellUpLeft;
+    currentCellIndex -= 9
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 9) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex - 9
+    )
+      return true;
     break;
   }
 
   const lastCellUpRight = cellIndex - Math.min(rank, maxMovesRight) * 7;
-  for (let currentCellIndex = cellIndex - 7; currentCellIndex >= lastCellUpRight; currentCellIndex -= 7) {
+  for (
+    let currentCellIndex = cellIndex - 7;
+    currentCellIndex >= lastCellUpRight;
+    currentCellIndex -= 7
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 7) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex - 7
+    )
+      return true;
     break;
   }
 
   const lastCellDownLeft = cellIndex + Math.min(maxMovesDown, maxMovesLeft) * 7;
-  for (let currentCellIndex = cellIndex + 7; currentCellIndex <= lastCellDownLeft; currentCellIndex += 7) {
+  for (
+    let currentCellIndex = cellIndex + 7;
+    currentCellIndex <= lastCellDownLeft;
+    currentCellIndex += 7
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 7) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex + 7
+    )
+      return true;
     break;
   }
 
-  const lastCellDownRight = cellIndex + Math.min(maxMovesDown, maxMovesRight) * 9;
-  for (let currentCellIndex = cellIndex + 9; currentCellIndex <= lastCellDownRight; currentCellIndex += 9) {
+  const lastCellDownRight =
+    cellIndex + Math.min(maxMovesDown, maxMovesRight) * 9;
+  for (
+    let currentCellIndex = cellIndex + 9;
+    currentCellIndex <= lastCellDownRight;
+    currentCellIndex += 9
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingBishop) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 9) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex + 9
+    )
+      return true;
     break;
   }
 
   const lastCellUp = cellIndex - rank * 8;
-  for (let currentCellIndex = cellIndex - 8; currentCellIndex >= lastCellUp; currentCellIndex -= 8) {
+  for (
+    let currentCellIndex = cellIndex - 8;
+    currentCellIndex >= lastCellUp;
+    currentCellIndex -= 8
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 8) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex - 8
+    )
+      return true;
     break;
   }
 
   const lastCellRight = cellIndex + maxMovesRight;
-  for (let currentCellIndex = cellIndex + 1; currentCellIndex <= lastCellRight; currentCellIndex += 1) {
+  for (
+    let currentCellIndex = cellIndex + 1;
+    currentCellIndex <= lastCellRight;
+    currentCellIndex += 1
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 1) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex + 1
+    )
+      return true;
     break;
   }
 
   const lastCellDown = cellIndex + maxMovesDown * 8;
-  for (let currentCellIndex = cellIndex + 8; currentCellIndex <= lastCellDown; currentCellIndex += 8) {
+  for (
+    let currentCellIndex = cellIndex + 8;
+    currentCellIndex <= lastCellDown;
+    currentCellIndex += 8
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex + 8) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex + 8
+    )
+      return true;
     break;
   }
 
   const lastCellLeft = cellIndex - maxMovesLeft;
-  for (let currentCellIndex = cellIndex - 1; currentCellIndex >= lastCellLeft; currentCellIndex -= 1) {
+  for (
+    let currentCellIndex = cellIndex - 1;
+    currentCellIndex >= lastCellLeft;
+    currentCellIndex -= 1
+  ) {
     if (board[currentCellIndex] === 0) continue; // empty cell
     if (board[currentCellIndex] === attackingRook) return true;
     if (board[currentCellIndex] === attackingQueen) return true;
-    if (board[currentCellIndex] === attackingKing && currentCellIndex === cellIndex - 1) return true;
+    if (
+      board[currentCellIndex] === attackingKing &&
+      currentCellIndex === cellIndex - 1
+    )
+      return true;
     break;
   }
 
