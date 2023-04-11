@@ -150,6 +150,7 @@ export const ysToStats = ({ ys, board, nextMoves: _nextMoves }) => {
   const winningMoveString = sortedMoves[0].moveString;
 
   return {
+    winningMove: sortedMoves[0].move,
     winningMoveString,
     sortedMoves,
   };

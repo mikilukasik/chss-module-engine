@@ -9,5 +9,6 @@ export function predict(arg: {
   model: any;
 }): {
   winningMoveString: string;
+  winningMove: number;
   sortedMoves: { move: string; score: number }[];
 };
