@@ -10,5 +10,5 @@ export function predict(arg: {
 }): {
   winningMoveString: string;
   winningMove: number;
-  sortedMoves: { move: string; score: number }[];
+  sortedMoves: { move: number; moveString: string; score: number }[];
 };
