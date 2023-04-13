@@ -1,4 +1,3 @@
-import { oneHotToMovesMap } from "../transformers/oneHotMovesMap.js";
 import { move2moveString } from "../transformers/move2moveString.js";
 import { move2oneHot } from "../transformers/oneHotMovesMap.js";
 
@@ -41,19 +40,6 @@ const mirrorBoard = (arr) => {
   }
 
   return chunks.flat();
-};
-
-const addQueenPromotion = (move, board) => {
-  const piece = (move >>> 6) & 15;
-  if (piece) return move;
-
-  const sourceIndex = move >>> 10;
-  const targetIndex = move & 63;
-
-  if (board[sourceIndex] === 1 && targetIndex >= 56) return move + (5 << 6);
-  if (board[sourceIndex] === 9 && targetIndex < 8) return move + (13 << 6);
-
-  return move;
 };
 
 export const getXs = ({ board: origBoard, lmt: origLmt, lmf: origLmf, tf }) => {
