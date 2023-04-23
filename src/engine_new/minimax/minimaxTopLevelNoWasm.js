@@ -10,7 +10,6 @@ export const minimax = async (
   alpha,
   beta,
   valueToAdd = 0,
-  deepMoveSorters = [],
   lmf,
   lmt,
   wantsToDraw
@@ -18,8 +17,6 @@ export const minimax = async (
   if (depth === 0) return evaluateBoard(board) + valueToAdd;
 
   let moves = generatePseudoMovesThrowMethod(board);
-  if (deepMoveSorters[0])
-    moves = await deepMoveSorters[0]({ board, moves, lmf, lmt });
 
   if (board[64]) {
     let value = -99999 - depth;
@@ -35,7 +32,6 @@ export const minimax = async (
             alpha,
             beta,
             valueToAdd,
-            deepMoveSorters.slice(1),
             nextLm.lmf,
             nextLm.lmt,
             wantsToDraw
@@ -73,7 +69,6 @@ export const minimax = async (
           alpha,
           beta,
           valueToAdd,
-          deepMoveSorters.slice(1),
           nextLm.lmf,
           nextLm.lmt,
           wantsToDraw
