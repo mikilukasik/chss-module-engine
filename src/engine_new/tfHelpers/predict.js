@@ -133,8 +133,8 @@ export const ysToStats = ({
     .map((move, moveIndex) => ({
       move,
       score:
-        (moveYs[move2oneHot(move)] || 0) * moveScoreRario +
-        winnerYs[moveIndex] * winnerScoreRario * (board[64] ? 1 : -1),
+        (moveYs[move2oneHot(move)] || 0) * moveScoreRario -
+        winnerYs[moveIndex] * winnerScoreRario,
     }))
     .sort((a, b) => b.score - a.score);
 
