@@ -1,3 +1,3 @@
-export module "cellStrToIndex.js" {}
+declare module "cellStrToIndex.js" {}
 
 export function cellStrToIndex(param: string): number;
