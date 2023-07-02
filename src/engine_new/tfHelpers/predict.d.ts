@@ -6,15 +6,15 @@ export function predictMove(arg: {
   lmt: number[];
   tf: any;
   moveModel: any;
-  winnerModel: any;
+  // winnerModel: any;
   moveScoreRario: number;
-  winnerScoreRario: number;
+  // winnerScoreRario: number;
   nextBoards: {
     move: number;
     board: Uint8Array;
     lmf: number[];
     lmt: number[];
-  }[]
+  }[];
 }): {
   winningMoveString: string;
   winningMove: number;
@@ -25,11 +25,11 @@ type ModelPredictionInput = {
   board: Uint8Array;
   lmf: number[];
   lmt: number[];
-}
-
-export function getWinnerPredictor(arg: {
-  tf: any;
-  model: any;
-}): function(ModelPredictionInput|ModelPredictionInput[]): {
-  winnerValue: number;
 };
+
+// export function getWinnerPredictor(arg: {
+//   tf: any;
+//   model: any;
+// }): function(ModelPredictionInput|ModelPredictionInput[]): {
+//   winnerValue: number;
+// };

@@ -120,11 +120,11 @@ export const getXs = ({ inputs, tf }) => {
 
 export const ysToStats = ({
   moveYs,
-  winnerYs,
+  // winnerYs,
   board,
   nextBoards,
   moveScoreRario,
-  winnerScoreRario,
+  // winnerScoreRario,
 }) => {
   const nextMoves = nextBoards.map((b) => b.move);
   const mirroredNextMoves = board[64] ? nextMoves : nextMoves.map(mirrorMove);
@@ -132,9 +132,8 @@ export const ysToStats = ({
   const sortedMirroredMoves = mirroredNextMoves
     .map((move, moveIndex) => ({
       move,
-      score:
-        (moveYs[move2oneHot(move)] || 0) * moveScoreRario -
-        winnerYs[moveIndex] * winnerScoreRario,
+      score: (moveYs[move2oneHot(move)] || 0) * moveScoreRario, // -
+      // winnerYs[moveIndex] * winnerScoreRario,
     }))
     .sort((a, b) => b.score - a.score);
 
@@ -163,37 +162,37 @@ export const predictMove = async ({
   tf,
   nextBoards,
   moveModel,
-  winnerModel,
+  // winnerModel,
   moveScoreRario,
-  winnerScoreRario,
+  // winnerScoreRario,
 }) => {
   const boardXs = getXs({ inputs: [{ board, lmf, lmt }], tf });
   const movePredictionTensor = moveModel.predict(boardXs);
   const moveYs = await movePredictionTensor.data();
   movePredictionTensor.dispose();
 
-  const nextBoardsXss = getXs({ tf, inputs: nextBoards });
-  const winnerPredictionTensor = winnerModel.predict(nextBoardsXss);
-  const winnerYs = await winnerPredictionTensor.data();
-  winnerPredictionTensor.dispose();
+  // const nextBoardsXss = getXs({ tf, inputs: nextBoards });
+  // const winnerPredictionTensor = winnerModel.predict(nextBoardsXss);
+  // const winnerYs = await winnerPredictionTensor.data();
+  // winnerPredictionTensor.dispose();
 
   return ysToStats({
     moveYs,
-    winnerYs,
+    // winnerYs,
     board,
     nextBoards,
     moveScoreRario,
-    winnerScoreRario,
+    // winnerScoreRario,
   });
 };
 
-export const getWinnerPredictor =
-  ({ tf, model }) =>
-  async ({ board, lmf, lmt }) => {
-    const xs = getXs({ inputs: [{ board, lmf, lmt }], tf });
-    const predictionTensor = model.predict(xs);
-    const ys = await predictionTensor.data();
-    predictionTensor.dispose();
+// export const getWinnerPredictor =
+//   ({ tf, model }) =>
+//   async ({ board, lmf, lmt }) => {
+//     const xs = getXs({ inputs: [{ board, lmf, lmt }], tf });
+//     const predictionTensor = model.predict(xs);
+//     const ys = await predictionTensor.data();
+//     predictionTensor.dispose();
 
-    return { winnerValue: ys[0] * (board[64] ? 1 : -1) };
-  };
+//     return { winnerValue: ys[0] * (board[64] ? 1 : -1) };
+//   };
